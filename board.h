@@ -21,7 +21,7 @@ struct {
 	location destination;
 } typedef move;
 
-board* parse_fen(char* fen);
-void render_board(board*);
+void load_fen(char*, board);
+void render_board(board);
 char ptoc(piece);
 piece ctop(char);
