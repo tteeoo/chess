@@ -4,12 +4,12 @@
 
 #include "board.h"
 
-char ptoc(piece p) {
-	if (p == 0)
+char ptoc(int piece) {
+	if (piece == 0)
 		return '-';
 
 	char c;
-	switch (p & ~(white | black)) {
+	switch (piece & ~(white | black)) {
 		case pawn:
 			c = 'p';
 			break;
@@ -29,40 +29,40 @@ char ptoc(piece p) {
 			c = 'k';
 			break;
 	}
-	if ((p & white) == white)
+	if ((piece & white) == white)
 		c = toupper(c);
 
 	return c;
 }
 
-piece ctop(char c) {
-	piece p = isupper(c) ? white : black;
+int ctop(char c) {
+	int piece = isupper(c) ? white : black;
 
 	switch (tolower(c)) {
 		case 'p':
-			p |= pawn;
+			piece |= pawn;
 			break;
 		case 'n':
-			p |= knight;
+			piece |= knight;
 			break;
 		case 'b':
-			p |= bishop;
+			piece |= bishop;
 			break;
 		case 'r':
-			p |= rook;
+			piece |= rook;
 			break;
 		case 'q':
-			p |= queen;
+			piece |= queen;
 			break;
 		case 'k':
-			p |= king;
+			piece |= king;
 			break;
 	}
 
-	return p;
+	return piece;
 }
 
-void load_fen(char* fen, board b) {
+void load_fen(char* fen, int board[64]) {
 	int file = 0;
 	int rank = 0;
 
@@ -77,7 +77,7 @@ void load_fen(char* fen, board b) {
 			if (isdigit(fen[i])) {
 				file += (int)(fen[i] - '0');
 			} else {
-				b[rank * 8 + file] = ctop(fen[i]);
+				board[rank * 8 + file] = ctop(fen[i]);
 				file++;
 			}
 		}
