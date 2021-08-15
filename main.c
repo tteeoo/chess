@@ -7,11 +7,13 @@
 #include "game.h"
 
 int main(int argc, char* argv[]) {
-	game g = {
+	game ng = {
 		.turn = white,
 		.board = {0},
-		.moves = NULL
+		.moves = NULL,
+		.ended = not_finished
 	};
-	load_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR", &g);
-	render_board(g.board);
+	game *g = &ng;
+	load_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR", g);
+	play(g);
 }

@@ -42,9 +42,8 @@ move* get_sliding_moves(int board[64], int tile) {
 			int destination = tile + directions[di] * (i + 1);
 			int occupying = board[destination];
 
-			if (HAS_MASK(occupying, PIECE_COLOR(piece))) {
+			if (HAS_MASK(occupying, PIECE_COLOR(piece)))
 				break;
-			}
 
 			move n = {.start = tile, .end = destination, .next = NULL};
 			if (!m)
@@ -52,9 +51,8 @@ move* get_sliding_moves(int board[64], int tile) {
 			else
 				m->next = &n;
 
-			if (HAS_MASK(occupying, PIECE_OCOLOR(piece))) {
+			if (HAS_MASK(occupying, PIECE_OCOLOR(piece)))
 				break;
-			}
 		}
 	}
 
@@ -69,6 +67,8 @@ move* get_moves(game* g) {
 			if (SLIDING_PIECE(piece)) {
 				get_sliding_moves(g->board, i);
 			}
+
+			// TODO: moves for other pieces
 		}
 	}
 
