@@ -9,7 +9,7 @@ char ptoc(int piece) {
 		return '-';
 
 	char c;
-	switch (piece & ~(white | black)) {
+	switch (PIECE_TYPE(piece)) {
 		case pawn:
 			c = 'p';
 			break;
@@ -29,7 +29,7 @@ char ptoc(int piece) {
 			c = 'k';
 			break;
 	}
-	if ((piece & white) == white)
+	if (HAS_MASK(piece, white))
 		c = toupper(c);
 
 	return c;
@@ -62,7 +62,7 @@ int ctop(char c) {
 	return piece;
 }
 
-void load_fen(char* fen, int board[64]) {
+void load_fen(char* fen, game g) {
 	int file = 0;
 	int rank = 0;
 
@@ -77,7 +77,7 @@ void load_fen(char* fen, int board[64]) {
 			if (isdigit(fen[i])) {
 				file += (int)(fen[i] - '0');
 			} else {
-				board[rank * 8 + file] = ctop(fen[i]);
+				g.board[rank * 8 + file] = ctop(fen[i]);
 				file++;
 			}
 		}

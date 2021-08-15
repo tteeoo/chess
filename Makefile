@@ -8,8 +8,7 @@ objects = main.o fen.o board.o moves.o
 ${TARGET}: ${objects}
 	${CC} ${CFLAGS} -o ${TARGET} ${objects}
 
-main.o fen.o board.o: board.h
-main.o moves.o: moves.h
+main.o fen.o board.o moves.o: board.h
 
 .PHONY: clean install 
 clean:

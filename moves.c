@@ -1,6 +1,23 @@
-#include "moves.h"
+#include <stdlib.h>
 
-void load_move_data(tiles tiles_from_edge[64]) {
+#include "board.h"
+
+static const int directions[] = { 8, -8, -1, 1, 7, -7, 9, -9 };
+
+struct {
+	int north;
+	int south;
+	int west;
+	int east;
+	int northwest;
+	int northeast;
+	int southwest;
+	int southeast;
+} typedef tile_data;
+
+static tile_data tiles_from_edge[64];
+
+void compute_move_data() {
 	for (int file = 0; file < 8; file++) {
 		for (int rank = 0; rank < 8; rank++) {
 			int i = rank * 8 + file;
@@ -18,4 +35,22 @@ void load_move_data(tiles tiles_from_edge[64]) {
 			tiles_from_edge[i].southeast = MIN(south, east);
 		}
 	}
+}
+
+move* get_sliding_moves(int piece, int tile) {
+	return NULL;
+}
+
+move* get_moves(game g) {
+	move* m = malloc(sizeof(move));
+	for (int i = 0; i < 64; i++) {
+		int piece = g.board[i];
+		if (HAS_MASK(piece, g.turn)) {
+			if (SLIDING_PIECE(piece)) {
+				get_sliding_moves(piece, i);
+			}
+		}
+	}
+
+	return m;
 }
