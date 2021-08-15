@@ -10,10 +10,14 @@
 
 #define HAS_MASK(piece, mask) ((piece & mask) == mask)
 #define PIECE_TYPE(piece) (piece & ~(white | black))
+#define PIECE_COLOR(piece) (piece & ~(pawn | knight | bishop | rook | queen | king))
+#define PIECE_OCOLOR(piece) ((PIECE_COLOR(piece) == white) \
+	? black : ((PIECE_COLOR(piece) == black) ? white : no_color))
 
 enum color {
 	black = 8,
-	white = 16
+	white = 16,
+	no_color = 0
 };
 
 enum type {
@@ -45,5 +49,5 @@ char ptoc(int);
 int ctop(char);
 
 void compute_move_data();
-move* get_sliding_moves(int, int);
+move* get_sliding_moves(int[64], int);
 move* get_moves(game*);
