@@ -41,11 +41,11 @@ move* get_sliding_moves(int piece, int tile) {
 	return NULL;
 }
 
-move* get_moves(game g) {
+move* get_moves(game* g) {
 	move* m = malloc(sizeof(move));
 	for (int i = 0; i < 64; i++) {
-		int piece = g.board[i];
-		if (HAS_MASK(piece, g.turn)) {
+		int piece = (*g).board[i];
+		if (HAS_MASK(piece, (*g).turn)) {
 			if (SLIDING_PIECE(piece)) {
 				get_sliding_moves(piece, i);
 			}

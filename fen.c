@@ -62,7 +62,7 @@ int ctop(char c) {
 	return piece;
 }
 
-void load_fen(char* fen, game g) {
+void load_fen(char* fen, game* g) {
 	int file = 0;
 	int rank = 0;
 
@@ -77,7 +77,7 @@ void load_fen(char* fen, game g) {
 			if (isdigit(fen[i])) {
 				file += (int)(fen[i] - '0');
 			} else {
-				g.board[rank * 8 + file] = ctop(fen[i]);
+				(*g).board[rank * 8 + file] = ctop(fen[i]);
 				file++;
 			}
 		}

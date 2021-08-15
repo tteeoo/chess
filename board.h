@@ -40,10 +40,10 @@ struct {
 
 void render_board(int[64]);
 
-void load_fen(char*, game);
+void load_fen(char*, game*);
 char ptoc(int);
 int ctop(char);
 
 void compute_move_data();
 move* get_sliding_moves(int, int);
-move* get_moves(game);
+move* get_moves(game*);
