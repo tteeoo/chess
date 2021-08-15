@@ -1,8 +1,12 @@
+// Chess implemented in C; fen.c implements parsing of the FEN notation.
+// Copyright (C) 2021 Theo Henson.
+// Released under the GPL v3.0, see LICENSE.
+
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
 
-#include "board.h"
+#include "game.h"
 
 char ptoc(int piece) {
 	if (piece == 0)

@@ -1,18 +1,20 @@
-#define MIN(a, b) \
-	({typeof (a) _a = (a); \
-		typeof (b) _b = (b); \
-	_a > _b ? _a : _b ;})
+// Chess implemented in C; game.c defines macros, types,
+// and function signatures used throughout the program.
+// Copyright (C) 2021 Theo Henson.
+// Released under the GPL v3.0, see LICENSE.
+
+#define MIN(x, y) ((x > y) ? y : x)
+#define HAS_MASK(piece, mask) ((piece & mask) == mask)
+#define PIECE_TYPE(piece) (piece & ~(white | black))
+#define PIECE_COLOR(piece) (piece & ~(pawn | knight | bishop | rook | queen | king))
+
+#define PIECE_OCOLOR(piece) ((PIECE_COLOR(piece) == white) \
+	? black : ((PIECE_COLOR(piece) == black) ? white : no_color))
 
 #define SLIDING_PIECE(piece) \
 	((PIECE_TYPE(piece) == queen) || \
 		(PIECE_TYPE(piece) == bishop) || \
 	(PIECE_TYPE(piece) == rook))
-
-#define HAS_MASK(piece, mask) ((piece & mask) == mask)
-#define PIECE_TYPE(piece) (piece & ~(white | black))
-#define PIECE_COLOR(piece) (piece & ~(pawn | knight | bishop | rook | queen | king))
-#define PIECE_OCOLOR(piece) ((PIECE_COLOR(piece) == white) \
-	? black : ((PIECE_COLOR(piece) == black) ? white : no_color))
 
 enum color {
 	black = 8,

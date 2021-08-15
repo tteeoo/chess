@@ -1,6 +1,10 @@
+// Chess implemented in C; moves.c implements the generation of valid moves.
+// Copyright (C) 2021 Theo Henson.
+// Released under the GPL v3.0, see LICENSE.
+
 #include <stdlib.h>
 
-#include "board.h"
+#include "game.h"
 
 static const int directions[] = { 8, -8, -1, 1, 7, -7, 9, -9 };
 
