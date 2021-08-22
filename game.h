@@ -3,7 +3,7 @@
 // Copyright (C) 2021 Theo Henson.
 // Released under the GPL v3.0, see LICENSE.
 
-#define GAME_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPP1/RNBQKBNR"
+#define GAME_FEN "rnbqkbnr/1ppppppp/8/8/8/8/PPPPPPP1/RNBQKBNR"
 #define PROMPT_LEN 256
 #define MIN(x, y) ((x > y) ? y : x)
 #define HAS_MASK(piece, mask) ((piece & mask) == mask)
@@ -51,7 +51,8 @@ typedef struct move move;
 struct {
 	enum piece_color turn;
 	int board[64];
-	move* moves;
+	move* moves_head;
+	move* moves_tail;
 	enum end_condition ended;
 } typedef game;
 

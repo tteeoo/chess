@@ -11,7 +11,8 @@ int main(int argc, char* argv[]) {
 	game ng = {
 		.turn = white,
 		.board = {0},
-		.moves = NULL,
+		.moves_head = NULL,
+		.moves_tail = NULL,
 		.ended = not_finished
 	};
 	game *g = &ng;

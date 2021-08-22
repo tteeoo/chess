@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include <readline/readline.h>
 #include <readline/history.h>
@@ -100,6 +101,43 @@ void repl(game* g) {
 				m = m->next;
 			}
 			render_board(g->board, do_highlight, highlights);
+			continue;
+		}
+		if (strlen(command) == 4) {
+			char start[2] = {command[0], command[1]};
+			char end[2] = {command[2], command[3]};
+			if (bad_notation(start) || bad_notation(end)) {
+				printf("bad notation\n");
+				continue;
+			}
+			int start_tile = notation_to_tile(start);
+			int end_tile = notation_to_tile(end);
+			if (g->board[start_tile] == 0 || !HAS_MASK(g->board[start_tile], g->turn)) {
+				printf("bad source tile\n");
+				continue;
+			}
+			move* m = get_piece_moves(g->board, start_tile);
+			while (m) {
+				if (m->end == end_tile) {
+					g->board[end_tile] = g->board[start_tile];
+					g->board[start_tile] = 0;
+					move* nm = malloc(sizeof(move*));
+					nm->start = start_tile;
+					nm->end = end_tile;
+					nm->next = NULL;
+					if (!g->moves_tail) {
+						g->moves_head = nm;
+						g->moves_tail = nm;
+					} else {
+						g->moves_tail->next = nm;
+						g->moves_tail = nm;
+					}
+					return;
+				}
+				m = m->next;
+			}
+			printf("bad move\n");
+			continue;
 		}
 	}
 }
