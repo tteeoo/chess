@@ -25,6 +25,14 @@ static int notation_to_tile(char notation[2]) {
 	return rank * 8 + file;
 }
 
+static char* tile_to_notation(int tile) {
+	int file = tile % 8;
+	int rank = tile / 8;
+	char* notation = malloc(3);
+	sprintf(notation, "%c%c", 'a' + file, '1' + rank);
+	return notation;
+}
+
 void render_board(int board[64], int do_highlight, int highlights[64]) {
 	char board_buffer[8][17];
 	int rank = 7;
@@ -45,11 +53,11 @@ void render_board(int board[64], int do_highlight, int highlights[64]) {
 			rank--;
 		}
 	}
-	printf("\n");
+	printf("\n   a b c d e f g h\n\n");
 	for (int i = 0; i < 8; i++) {
-		printf("%s\n", board_buffer[i]);
+		printf("%c  %s %c\n", '8' - i, board_buffer[i], '8' - i);
 	}
-	printf("\n");
+	printf("\n   a b c d e f g h\n\n");
 }
 
 void repl(game* g) {
@@ -57,19 +65,38 @@ void repl(game* g) {
 	int do_highlight = 0;
 	int highlights[64] = {0};
 	char prompt[PROMPT_LEN];
-	sprintf(prompt, "%s to move: ", (g->turn == white) ? "WHITE" : "black");
+	sprintf(prompt, "%s to move : ", (g->turn == white) ? "WHITE" : "black");
 	while (1) {
 		char* command = readline(prompt);
+		if (command && *command)
+			add_history(command);
 	
 		if (strlen(command) == 1) {
+			move* m;
 			switch (command[0]) {
 				case 'b':
 					render_board(g->board, do_highlight, highlights);
 					continue;
-				case 'n':
+				case 'c':
 					selected_tile = -1;
 					do_highlight = 0;
-					sprintf(prompt, "%s to move: ", (g->turn == white) ? "WHITE" : "black");
+					sprintf(prompt, "%s to move : ", (g->turn == white) ? "WHITE" : "black");
+					continue;
+				case 'm':
+					m = g->moves_head;
+					int i = 1;
+					while (m) {
+						printf("%d. %s%s", i, tile_to_notation(m->start), tile_to_notation(m->end));
+						m = m->next;
+						if (m) {
+							printf(" %s%s\n", tile_to_notation(m->start), tile_to_notation(m->end));
+							m = m->next;
+						} else {
+							printf("\n");
+							break;
+						}
+						i++;
+					}
 					continue;
 			}
 		}
@@ -95,7 +122,7 @@ void repl(game* g) {
 				continue;
 			}
 
-			sprintf(prompt, "%s to move (%s): ", (g->turn == white) ? "WHITE" : "black, command", command);
+			sprintf(prompt, "%s to move (%s) : ", (g->turn == white) ? "WHITE" : "black", command);
 			while (m) {
 				highlights[m->end] = 1;
 				m = m->next;
@@ -139,6 +166,7 @@ void repl(game* g) {
 			printf("bad move\n");
 			continue;
 		}
+		printf("bad command\n");
 	}
 }
 
