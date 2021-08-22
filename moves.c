@@ -14,8 +14,8 @@ void compute_move_data() {
 	for (int file = 0; file < 8; file++) {
 		for (int rank = 0; rank < 8; rank++) {
 			int i = rank * 8 + file;
-			int north = rank;
-			int south = 7 - rank;
+			int north = 7 - rank;
+			int south = rank;
 			int west = file;
 			int east = 7 - file;
 			tiles_from_edge[i] = malloc(sizeof(int) * 8);
@@ -33,9 +33,10 @@ void compute_move_data() {
 
 move* get_sliding_moves(int board[64], int tile) {
 	move* m = NULL;
+	move* head = NULL;
 	int piece = board[tile];
-	int di_start = HAS_MASK(piece, bishop) ? 4 : 0;
-	int di_end = HAS_MASK(piece, rook) ? 4 : 8;
+	int di_start = (PIECE_TYPE(piece) == bishop) ? 4 : 0;
+	int di_end = (PIECE_TYPE(piece) == rook) ? 4 : 8;
 
 	for (int di = di_start; di < di_end; di++) {
 		for (int i = 0; i < tiles_from_edge[tile][di]; i++) {
@@ -45,30 +46,50 @@ move* get_sliding_moves(int board[64], int tile) {
 			if (HAS_MASK(occupying, PIECE_COLOR(piece)))
 				break;
 
-			move n = {.start = tile, .end = destination, .next = NULL};
-			if (!m)
-				m = &n;
-			else
-				m->next = &n;
+			move* np = malloc(sizeof(move*));
+			np->start = tile;
+			np->end = destination;
+			np->next = NULL;
+			if (!m) {
+				m = np;
+				head = np;
+			} else {
+				m->next = np;
+				m = np;
+			}
 
 			if (HAS_MASK(occupying, PIECE_OCOLOR(piece)))
 				break;
 		}
 	}
 
-	return m;
+	return head;
+}
+
+move* get_piece_moves(int board[64], int tile) {
+	if (SLIDING_PIECE(board[tile])) {
+		return get_sliding_moves(board, tile);
+	}
+
+	// TODO: moves for other pieces
+	
+	return NULL;
 }
 
 move* get_moves(game* g) {
-	move* m = malloc(sizeof(move));
+	move* m = NULL;
 	for (int i = 0; i < 64; i++) {
 		int piece = g->board[i];
 		if (HAS_MASK(piece, g->turn)) {
-			if (SLIDING_PIECE(piece)) {
-				get_sliding_moves(g->board, i);
+			move* mp = get_piece_moves(g->board, i);
+			if (!mp) {
+				if (!m)
+					m = mp;
+				else {
+					m->next = mp;
+					m = m->next;
+				}
 			}
-
-			// TODO: moves for other pieces
 		}
 	}
 

@@ -68,7 +68,7 @@ int ctop(char c) {
 
 void load_fen(char* fen, game* g) {
 	int file = 0;
-	int rank = 0;
+	int rank = 7;
 
 	for (int i = 0; i < strlen(fen); i++) {
 		if (fen[i] == ' ') {
@@ -76,7 +76,7 @@ void load_fen(char* fen, game* g) {
 			break;
 		} else if (fen[i] == '/') {
 			file = 0;
-			rank++;
+			rank--;
 		} else {
 			if (isdigit(fen[i])) {
 				file += (int)(fen[i] - '0');

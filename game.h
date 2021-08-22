@@ -3,7 +3,8 @@
 // Copyright (C) 2021 Theo Henson.
 // Released under the GPL v3.0, see LICENSE.
 
-#define COMMAND_LEN 256
+#define GAME_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPP1/RNBQKBNR"
+#define PROMPT_LEN 256
 #define MIN(x, y) ((x > y) ? y : x)
 #define HAS_MASK(piece, mask) ((piece & mask) == mask)
 #define PIECE_TYPE(piece) (piece & ~(white | black))
@@ -54,7 +55,7 @@ struct {
 	enum end_condition ended;
 } typedef game;
 
-void render_board(int[64]);
+void render_board(int[64], int, int[64]);
 void repl(game*);
 void play(game*);
 
@@ -64,4 +65,5 @@ int ctop(char);
 
 void compute_move_data();
 move* get_sliding_moves(int[64], int);
+move* get_piece_moves(int[64], int);
 move* get_moves(game*);

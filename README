@@ -1,5 +1,7 @@
 Chess in C. (Work in Progress)
 Maybe I'll make an engine?
 
+Dependencies:
+* GNU Readline
 
-Some parts inspired by https://github.com/SebLague/Chess-AI.
+Some parts inspired by (no line-for-line code): https://github.com/SebLague/Chess-AI

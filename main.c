@@ -7,6 +7,7 @@
 #include "game.h"
 
 int main(int argc, char* argv[]) {
+	compute_move_data();
 	game ng = {
 		.turn = white,
 		.board = {0},
@@ -14,6 +15,6 @@ int main(int argc, char* argv[]) {
 		.ended = not_finished
 	};
 	game *g = &ng;
-	load_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR", g);
+	load_fen(GAME_FEN, g);
 	play(g);
 }
