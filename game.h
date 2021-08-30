@@ -56,7 +56,7 @@ struct {
 	enum end_condition ended;
 } typedef game;
 
-void render_board(int[64], int, int[64]);
+void render_board(int[64], int[64]);
 void repl(game*);
 void play(game*);
 
@@ -65,6 +65,5 @@ char ptoc(int);
 int ctop(char);
 
 void compute_move_data();
-move* get_sliding_moves(int[64], int);
 move* get_piece_moves(int[64], int);
 move* get_moves(game*);

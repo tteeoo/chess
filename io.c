@@ -33,13 +33,13 @@ static char* tile_to_notation(int tile) {
 	return notation;
 }
 
-void render_board(int board[64], int do_highlight, int highlights[64]) {
+void render_board(int board[64], int highlights[64]) {
 	char board_buffer[8][17];
 	int rank = 7;
 	int file = 0;
 	for (int i = 0; i < 64; i++) {
 		board_buffer[rank][file] = ptoc(board[i]);
-		if (do_highlight && highlights[i]) {
+		if (highlights[i]) {
 			if (board[i] != 0)
 				board_buffer[rank][file] = 'x';
 			else
@@ -62,7 +62,6 @@ void render_board(int board[64], int do_highlight, int highlights[64]) {
 
 void repl(game* g) {
 	int selected_tile = -1;
-	int do_highlight = 0;
 	int highlights[64] = {0};
 	char prompt[PROMPT_LEN];
 	sprintf(prompt, "%s to move : ", (g->turn == white) ? "WHITE" : "black");
@@ -75,11 +74,12 @@ void repl(game* g) {
 			move* m;
 			switch (command[0]) {
 				case 'b':
-					render_board(g->board, do_highlight, highlights);
+					render_board(g->board, highlights);
 					continue;
 				case 'c':
 					selected_tile = -1;
-					do_highlight = 0;
+					for (int i = 0; i < 64; i++)
+						highlights[i] = 0;
 					sprintf(prompt, "%s to move : ", (g->turn == white) ? "WHITE" : "black");
 					continue;
 				case 'm':
@@ -112,12 +112,10 @@ void repl(game* g) {
 				continue;
 			}
 				
-			do_highlight = 1;
 			move* m = get_piece_moves(g->board, selected_tile);
 
 			if (!m) {
 				printf("piece has no moves\n");
-				do_highlight = 0;
 				selected_tile = -1;
 				continue;
 			}
@@ -127,7 +125,7 @@ void repl(game* g) {
 				highlights[m->end] = 1;
 				m = m->next;
 			}
-			render_board(g->board, do_highlight, highlights);
+			render_board(g->board, highlights);
 			continue;
 		}
 		if (strlen(command) == 4) {
@@ -171,8 +169,9 @@ void repl(game* g) {
 }
 
 void play(game* g) {
+	int highlights[64] = { 0 };
 	while (g->ended == not_finished) {
-		render_board(g->board, 0, NULL);
+		render_board(g->board, highlights);
 		repl(g);
 		g->turn = (g->turn == white) ? black : white;
 	}
