@@ -174,7 +174,29 @@ void repl(game* g) {
 			// Check input move and make it
 			while (m) {
 				if (m->end == end_tile) {
-					g->board[end_tile] = g->board[start_tile];
+
+					// Promotion
+					if (m->promotion) {
+						int piece = 0;
+						char* command = "";
+						while (1) {
+							command = readline("choose promotion (q/b/n/r) : ");
+							if (command && *command)
+								add_history(command);
+							if (strlen(command) != 1) {
+								printf("bad promotion\n");
+								continue;
+							}
+							piece = ctop(command[0]);
+							if ((piece == 0) || (PIECE_TYPE(piece) == pawn) || (PIECE_TYPE(piece) == king)) {
+								printf("bad promotion\n");
+								continue;
+							}
+							g->board[end_tile] = PIECE_TYPE(piece) | g->turn;
+							break;
+						}
+					} else
+						g->board[end_tile] = g->board[start_tile];
 					g->board[start_tile] = 0;
 					move* nm = malloc(sizeof(move*));
 					nm->start = start_tile;

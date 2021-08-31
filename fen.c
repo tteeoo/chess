@@ -63,6 +63,8 @@ int ctop(char c) {
 		case 'k':
 			piece |= king;
 			break;
+		default:
+			piece = 0;
 	}
 
 	return piece;

@@ -43,6 +43,7 @@ enum end_condition {
 struct move {
 	int start;
 	int end;
+	int promotion;
 	struct move* next;
 };
 typedef struct move move;

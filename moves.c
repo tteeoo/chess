@@ -7,13 +7,13 @@
 #include "game.h"
 
 // Appends a move to a linked list
-#define APPEND_MOVE(m, head, np) { \
+#define APPEND_MOVE(m, head, nm) { \
 		if (!m) { \
-			m = np; \
-			head = np; \
+			m = nm; \
+			head = nm; \
 		} else { \
-			m->next = np; \
-			m = np; \
+			m->next = nm; \
+			m = nm; \
 		} \
 	}
 
@@ -119,26 +119,25 @@ static move* get_pawn_moves(int board[64], int tile) {
 	// Forward
 	int forward_tile = tile + forward;
 	if (board[forward_tile] == 0) {
-		if (next_promotion) {
-			// TODO: promotion
-		} else {
-			move* np = malloc(sizeof(move*));
-			np->start = tile;
-			np->end = forward_tile;
-			np->next = NULL;
-			APPEND_MOVE(m, head, np);
-		}
+		move* nm = malloc(sizeof(move*));
+		nm->start = tile;
+		nm->end = forward_tile;
+		if (next_promotion)
+			nm->promotion = 1;
+		else
+			nm->promotion = 0;
+		nm->next = NULL;
+		APPEND_MOVE(m, head, nm);
 		if (rank == start) {
 			int two_forward = forward_tile + forward;
 			if (board[two_forward] == 0) {
-				move* np = malloc(sizeof(move*));
-				np->start = tile;
-				np->end = two_forward;
-				np->next = NULL;
-				APPEND_MOVE(m, head, np);
+				move* nm = malloc(sizeof(move*));
+				nm->start = tile;
+				nm->end = two_forward;
+				nm->next = NULL;
+				APPEND_MOVE(m, head, nm);
 			}
 		}
-		
 	}
 
 	// Captures
@@ -149,15 +148,15 @@ static move* get_pawn_moves(int board[64], int tile) {
 			int destination = tile + capture_direction;
 			int occupying = board[destination];
 			if (HAS_MASK(occupying, PIECE_OCOLOR(piece))) {
-				if (next_promotion) {
-					// TODO: promotion
-				} else {
-					move* np = malloc(sizeof(move*));
-					np->start = tile;
-					np->end = destination;
-					np->next = NULL;
-					APPEND_MOVE(m, head, np);
-				}
+				move* nm = malloc(sizeof(move*));
+				nm->start = tile;
+				nm->end = destination;
+				if (next_promotion)
+					nm->promotion = 1;
+				else
+					nm->promotion = 0;
+				nm->next = NULL;
+				APPEND_MOVE(m, head, nm);
 			}
 
 			// TODO: en passant
@@ -183,11 +182,11 @@ static move* get_sliding_moves(int board[64], int tile) {
 			if (HAS_MASK(occupying, PIECE_COLOR(piece)))
 				break;
 
-			move* np = malloc(sizeof(move*));
-			np->start = tile;
-			np->end = destination;
-			np->next = NULL;
-			APPEND_MOVE(m, head, np);
+			move* nm = malloc(sizeof(move*));
+			nm->start = tile;
+			nm->end = destination;
+			nm->next = NULL;
+			APPEND_MOVE(m, head, nm);
 
 			if (HAS_MASK(occupying, PIECE_OCOLOR(piece)))
 				break;
@@ -209,11 +208,11 @@ static move* get_knight_moves(int board[64], int tile) {
 		if (HAS_MASK(board[knight_jumps[tile][i]], PIECE_COLOR(piece)))
 			continue;
 
-		move* np = malloc(sizeof(move*));
-		np->start = tile;
-		np->end = knight_jumps[tile][i];
-		np->next = NULL;
-		APPEND_MOVE(m, head, np);
+		move* nm = malloc(sizeof(move*));
+		nm->start = tile;
+		nm->end = knight_jumps[tile][i];
+		nm->next = NULL;
+		APPEND_MOVE(m, head, nm);
 	}
 
 	return head;
@@ -243,8 +242,8 @@ move* get_moves(game* g) {
 	for (int i = 0; i < 64; i++) {
 		int piece = g->board[i];
 		if (HAS_MASK(piece, g->turn)) {
-			move* np = get_piece_moves(g->board, i);
-			APPEND_MOVE(m, head, np);
+			move* nm = get_piece_moves(g->board, i);
+			APPEND_MOVE(m, head, nm);
 			for (; m; m = m->next);
 		}
 	}
