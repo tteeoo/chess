@@ -8,6 +8,7 @@
 
 #include "game.h"
 
+// Piece to char
 char ptoc(int piece) {
 	if (piece == 0)
 		return '-';
@@ -39,6 +40,7 @@ char ptoc(int piece) {
 	return c;
 }
 
+// Char to piece
 int ctop(char c) {
 	int piece = isupper(c) ? white : black;
 
@@ -66,6 +68,7 @@ int ctop(char c) {
 	return piece;
 }
 
+// Populates game board from FEN string
 void load_fen(char* fen, game* g) {
 	int file = 0;
 	int rank = 7;

@@ -11,6 +11,7 @@
 
 #include "game.h"
 
+// Returns 1 if the provided algebraic notation is invalid
 static int bad_notation(char notation[2]) {
 	if (notation[0] < 'a' || notation[0] > 'h')
 		return 1;
@@ -19,12 +20,14 @@ static int bad_notation(char notation[2]) {
 	return 0;
 }
 
+// Returns the index of a notated tile
 static int notation_to_tile(char notation[2]) {
 	int file = (int)(notation[0] - 'a');
 	int rank = (int)(notation[1] - '1');
 	return rank * 8 + file;
 }
 
+// Returns the notation of a tile index
 static char* tile_to_notation(int tile) {
 	int file = tile % 8;
 	int rank = tile / 8;
@@ -33,6 +36,7 @@ static char* tile_to_notation(int tile) {
 	return notation;
 }
 
+// Prints the board with highlights
 void render_board(int board[64], int highlights[64]) {
 	char board_buffer[8][17];
 	int rank = 7;
@@ -60,31 +64,37 @@ void render_board(int board[64], int highlights[64]) {
 	printf("\n   a b c d e f g h\n\n");
 }
 
+// Creates a read-evaluate-print loop until a move is made
 void repl(game* g) {
 	int selected_tile = -1;
 	int highlights[64] = {0};
 	char prompt[PROMPT_LEN];
 	sprintf(prompt, "%s to move : ", (g->turn == white) ? "WHITE" : "black");
+
+	// Repeat until move is chosen
 	while (1) {
 		char* command = readline(prompt);
 		if (command && *command)
 			add_history(command);
-	
+
+		// One character commands
 		if (strlen(command) == 1) {
-			move* m;
+			move* m = g->moves_head;
+			int i = 1;
 			switch (command[0]) {
+				// Render board
 				case 'b':
 					render_board(g->board, highlights);
 					continue;
+				// Cancel selection
 				case 'c':
 					selected_tile = -1;
 					for (int i = 0; i < 64; i++)
 						highlights[i] = 0;
 					sprintf(prompt, "%s to move : ", (g->turn == white) ? "WHITE" : "black");
 					continue;
+				// Move history
 				case 'm':
-					m = g->moves_head;
-					int i = 1;
 					while (m) {
 						printf("%d. %s%s", i, tile_to_notation(m->start), tile_to_notation(m->end));
 						m = m->next;
@@ -98,8 +108,20 @@ void repl(game* g) {
 						i++;
 					}
 					continue;
+				// Quit
+				case 'q':
+					printf("quitting...\n");
+					while (m) {
+						move* om = m;
+						m = m->next;
+						free(om);
+					}
+					exit(0);
+					continue;
 			}
 		}
+
+		// Select a piece
 		if (strlen(command) == 2) {
 			if (bad_notation(command)) {
 				printf("bad notation\n");
@@ -123,12 +145,18 @@ void repl(game* g) {
 			sprintf(prompt, "%s to move (%s) : ", (g->turn == white) ? "WHITE" : "black", command);
 			while (m) {
 				highlights[m->end] = 1;
+				move* om = m;
 				m = m->next;
+				free(om);
 			}
 			render_board(g->board, highlights);
 			continue;
 		}
+
+		// Move is made
 		if (strlen(command) == 4) {
+
+			// Get piece moves
 			char start[2] = {command[0], command[1]};
 			char end[2] = {command[2], command[3]};
 			if (bad_notation(start) || bad_notation(end)) {
@@ -142,6 +170,8 @@ void repl(game* g) {
 				continue;
 			}
 			move* m = get_piece_moves(g->board, start_tile);
+
+			// Check input move and make it
 			while (m) {
 				if (m->end == end_tile) {
 					g->board[end_tile] = g->board[start_tile];
@@ -159,7 +189,9 @@ void repl(game* g) {
 					}
 					return;
 				}
+				move* om = m;
 				m = m->next;
+				free(om);
 			}
 			printf("bad move\n");
 			continue;
@@ -168,13 +200,18 @@ void repl(game* g) {
 	}
 }
 
+// Starts the game
 void play(game* g) {
+
+	// Take commands
 	int highlights[64] = { 0 };
 	while (g->ended == not_finished) {
 		render_board(g->board, highlights);
 		repl(g);
 		g->turn = (g->turn == white) ? black : white;
 	}
+
+	// Handle endings
 	switch (g->ended) {
 		case by_checkmate:
 			printf("game ended: %s wins by checkmate\n", (g->turn == white) ? "black" : "white");

@@ -105,6 +105,7 @@ void compute_move_data() {
 	}
 }
 
+// Gets moves for a pawn
 static move* get_pawn_moves(int board[64], int tile) {
 	move* m = NULL;
 	move* head = NULL;

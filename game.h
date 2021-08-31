@@ -3,9 +3,8 @@
 // Copyright (C) 2021 Theo Henson.
 // Released under the GPL v3.0, see LICENSE.
 
-#define GAME_FEN "rnbqkbnr/1ppppppp/8/8/8/8/PPPPPPP1/RNBQKBNR"
+#define GAME_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
 #define PROMPT_LEN 256
-#define MIN(x, y) ((x > y) ? y : x)
 #define HAS_MASK(piece, mask) ((piece & mask) == mask)
 #define PIECE_TYPE(piece) (piece & ~(white | black))
 #define PIECE_COLOR(piece) (piece & ~(pawn | knight | bishop | rook | queen | king))
@@ -56,14 +55,17 @@ struct {
 	enum end_condition ended;
 } typedef game;
 
+// io.c
 void render_board(int[64], int[64]);
 void repl(game*);
 void play(game*);
 
+// fen.c
 void load_fen(char*, game*);
 char ptoc(int);
 int ctop(char);
 
+// moves.c
 void compute_move_data();
 move* get_piece_moves(int[64], int);
 move* get_moves(game*);
