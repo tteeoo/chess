@@ -59,6 +59,7 @@ struct {
 
 // io.c
 void render_board(int[64], move* m);
+int promotion_prompt();
 void repl(game*);
 void play(game*);
 
@@ -69,5 +70,6 @@ int ctop(char);
 
 // moves.c
 void compute_move_data();
+void make_move(game*, move*);
 move* get_piece_moves(game*, int);
 move* get_moves(game*);

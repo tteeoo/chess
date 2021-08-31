@@ -74,6 +74,26 @@ void render_board(int board[64], move* m) {
 	printf("\n   a b c d e f g h\n\n");
 }
 
+int promotion_prompt() {
+	char* command;
+	int piece;
+	while (1) {
+		command = readline("choose promotion (q/b/n/r) : ");
+		if (command && *command)
+			add_history(command);
+		if (strlen(command) != 1) {
+			printf("bad promotion\n");
+			continue;
+		}
+		piece = ctop(command[0]);
+		if ((piece == 0) || (PIECE_TYPE(piece) == pawn) || (PIECE_TYPE(piece) == king)) {
+			printf("bad promotion\n");
+			continue;
+		}
+		return piece;
+	}
+}
+
 // Creates a read-evaluate-print loop until a move is made
 void repl(game* g) {
 	int selected_tile = -1;
@@ -142,7 +162,6 @@ void repl(game* g) {
 			}
 				
 			move* m = get_piece_moves(g, selected_tile);
-
 			if (!m) {
 				printf("piece has no moves\n");
 				selected_tile = -1;
@@ -180,45 +199,7 @@ void repl(game* g) {
 			// Check input move and make it
 			while (m) {
 				if (m->end == end_tile) {
-
-					// Promotion
-					if (m->promotion) {
-						int piece = 0;
-						char* command = "";
-						while (1) {
-							command = readline("choose promotion (q/b/n/r) : ");
-							if (command && *command)
-								add_history(command);
-							if (strlen(command) != 1) {
-								printf("bad promotion\n");
-								continue;
-							}
-							piece = ctop(command[0]);
-							if ((piece == 0) || (PIECE_TYPE(piece) == pawn) || (PIECE_TYPE(piece) == king)) {
-								printf("bad promotion\n");
-								continue;
-							}
-							g->board[end_tile] = PIECE_TYPE(piece) | g->turn;
-							g->board[start_tile] = 0;
-							break;
-						}
-					} else {
-						if (m->en_passant) 
-							g->board[g->moves_tail->end] = 0;
-						g->board[end_tile] = g->board[start_tile];
-						g->board[start_tile] = 0;
-					}
-					move* nm = malloc(sizeof(move*));
-					nm->start = start_tile;
-					nm->end = end_tile;
-					nm->next = NULL;
-					if (!g->moves_tail) {
-						g->moves_head = nm;
-						g->moves_tail = nm;
-					} else {
-						g->moves_tail->next = nm;
-						g->moves_tail = nm;
-					}
+					make_move(g, m);
 					return;
 				}
 				move* om = m;

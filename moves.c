@@ -112,6 +112,31 @@ void compute_move_data() {
 	}
 }
 
+// Makes a move
+void make_move(game* g, move* m) {
+	if (m->promotion) {
+		int piece = promotion_prompt();
+		g->board[m->end] = PIECE_TYPE(piece) | g->turn;
+		g->board[m->start] = 0;
+	} else {
+		if (m->en_passant) 
+			g->board[g->moves_tail->end] = 0;
+		g->board[m->end] = g->board[m->start];
+		g->board[m->start] = 0;
+	}
+	move* nm = malloc(sizeof(move*));
+	nm->start = m->start;
+	nm->end = m->end;
+	nm->next = NULL;
+	if (!g->moves_tail) {
+		g->moves_head = nm;
+		g->moves_tail = nm;
+	} else {
+		g->moves_tail->next = nm;
+		g->moves_tail = nm;
+	}
+}
+
 // Gets moves for a pawn
 static move* get_pawn_moves(game* g, int tile) {
 	move* m = NULL;
