@@ -3,7 +3,7 @@
 // Copyright (C) 2021 Theo Henson.
 // Released under the GPL v3.0, see LICENSE.
 
-#define GAME_FEN "rnbqkbnr/pppppppp/8/4P3/3p4/8/PPPPPPPP/RNBQKBNR"
+#define GAME_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
 #define PROMPT_LEN 256
 #define HAS_MASK(piece, mask) ((piece & mask) == mask)
 #define PIECE_TYPE(piece) (piece & ~(white | black))

@@ -32,6 +32,7 @@ int tiles_from_edge[64][8];
 int knight_jumps[64][8];
 int pawn_captures_white[64][2];
 int pawn_captures_black[64][2];
+int king_moves[64][8];
 
 // Branchless maximum function
 static int max(int a, int b) {
@@ -83,11 +84,11 @@ void compute_move_data() {
 		// Calculate knight moves
 		for (int i = 0; i < 8; i++) {
 			int jump_tile = tile + knight_jump_offsets[i];
-			if (jump_tile > -1 && jump_tile < 64) {
+			if (jump_tile >= 0 && jump_tile < 64) {
 				int jump_rank = jump_tile / 8;
 				int jump_file = jump_tile % 8;
-				int move_dst = max(abs(file - jump_file), abs(rank - jump_rank));
-				if (move_dst == 2)
+				int move_distance = max(abs(file - jump_file), abs(rank - jump_rank));
+				if (move_distance == 2)
 					knight_jumps[tile][i] = jump_tile;
 				else
 					knight_jumps[tile][i] = -1;
@@ -108,6 +109,20 @@ void compute_move_data() {
 				pawn_captures_white[tile][0] = tile + pawn_capture_offsets[0][1];
 			if (rank > 0)
 				pawn_captures_black[tile][0] = tile + pawn_capture_offsets[1][1];
+		}
+
+		// Calculate king moves
+		for (int i = 0; i < 8; i++) {
+			int move_tile = tile + directions[i];
+			if (move_tile >= 0 && move_tile < 64) {
+				int move_rank = move_tile / 8;
+				int move_file = move_tile % 8;
+				int move_distance = max(abs(file - move_file), abs(rank - move_rank));
+				if (move_distance == 1)
+					king_moves[tile][i] = move_tile;
+				else
+					king_moves[tile][i] = -1;
+			}
 		}
 	}
 }
@@ -270,20 +285,46 @@ static move* get_knight_moves(int board[64], int tile) {
 	return head;
 }
 
+// Gets moves for a king
+static move* get_king_moves(int board[64], int tile) {
+	move* m = NULL;
+	move* head = NULL;
+	int piece = board[tile];
+
+	for (int i = 0; i < 8; i++) {
+		if (king_moves[tile][i] == -1)
+			continue;
+		if (HAS_MASK(board[king_moves[tile][i]], PIECE_COLOR(piece)))
+			continue;
+
+		move* nm = malloc(sizeof(move*));
+		nm->start = tile;
+		nm->end = king_moves[tile][i];
+		nm->en_passant = 0;
+		nm->promotion = 0;
+		nm->next = NULL;
+		APPEND_MOVE(m, head, nm);
+	}
+
+	// TODO: castling
+
+	return head;
+}
+
 // Gets moves for a specific piece
 move* get_piece_moves(game* g, int tile) {
+	if (PIECE_TYPE(g->board[tile]) == pawn) {
+		return get_pawn_moves(g, tile);
+	}
 	if (SLIDING_PIECE(g->board[tile])) {
 		return get_sliding_moves(g->board, tile);
 	}
 	if (PIECE_TYPE(g->board[tile]) == knight) {
 		return get_knight_moves(g->board, tile);
 	}
-	if (PIECE_TYPE(g->board[tile]) == pawn) {
-		return get_pawn_moves(g, tile);
+	if (PIECE_TYPE(g->board[tile]) == king) {
+		return get_king_moves(g->board, tile);
 	}
-
-	// TODO: moves for king
-	
 	return NULL;
 }
 
