@@ -3,8 +3,11 @@
 // Released under the GPL v3.0, see LICENSE.
 
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "game.h"
+
+#define COL_I(piece) ((HAS_MASK(piece, white)) ? 0 : 1)
 
 // Appends a move to a linked list
 #define APPEND_MOVE(m, head, nm) { \
@@ -22,6 +25,7 @@ static const int directions[] = { 8, -8, -1, 1, 7, -7, 9, -9 };
 static const int knight_jump_offsets[] = { 15, 17, -17, -15, 10, -6, 6, -10 };
 static const int pawn_capture_offsets[2][2] = { { 7, 9 }, { -9, -7 } };
 static const int pawn_capture_directions[2][2] = { { 4, 6 }, { 7, 5 } };
+static const int pawn_locations[2][4] = { { 1, 6, 8, 3 }, { 6, 1, -8, 4 } };
 
 // Stores information about vailid moves
 int tiles_from_edge[64][8];
@@ -30,25 +34,29 @@ int pawn_captures_white[64][2];
 int pawn_captures_black[64][2];
 
 // Branchless maximum function
-int max(int a, int b) {
+static int max(int a, int b) {
 	int diff = a - b;
 	int dsgn = diff >> 31;
 	return a - (diff & dsgn);
 }
 
 // Branchless minimum function
-int min(int a, int b) {
+static int min(int a, int b) {
 	int diff = a - b;
 	int dsgn = diff >> 31;
 	return b + (diff & dsgn);
 }
 
-// Branchless absolute value function
-int abs(int a) {
-	int s = a >> 31;
-	a ^= s;
-	a -= s;
-	return a;
+static int two_pawn_push(move* m, int board[64]) {
+	if (m) {
+		int piece = board[m->end];
+		int c = COL_I(piece);
+		if ((m->start / 8 == pawn_locations[c][0]) &&
+			(m->end / 8 == pawn_locations[c][3])) {
+			return 1;
+		}
+	}
+	return 0;
 }
 
 // Computes information about valid moves
@@ -101,20 +109,19 @@ void compute_move_data() {
 			if (rank > 0)
 				pawn_captures_black[tile][0] = tile + pawn_capture_offsets[1][1];
 		}
-
 	}
 }
 
 // Gets moves for a pawn
-static move* get_pawn_moves(int board[64], int tile) {
+static move* get_pawn_moves(game* g, int tile) {
 	move* m = NULL;
 	move* head = NULL;
+	int* board = g->board;
 	int piece = board[tile];
-	int forward = (HAS_MASK(piece, white)) ? 8 : -8;
-	int start = (HAS_MASK(piece, white)) ? 1 : 6;
-	int end = (HAS_MASK(piece, white)) ? 6 : 1;
+	int c = COL_I(piece);
+	int forward = pawn_locations[c][2];
 	int rank = tile / 8;
-	int next_promotion = rank == end;
+	int next_promotion = rank == pawn_locations[c][1];
 
 	// Forward
 	int forward_tile = tile + forward;
@@ -122,18 +129,21 @@ static move* get_pawn_moves(int board[64], int tile) {
 		move* nm = malloc(sizeof(move*));
 		nm->start = tile;
 		nm->end = forward_tile;
+		nm->en_passant = 0;
 		if (next_promotion)
 			nm->promotion = 1;
 		else
 			nm->promotion = 0;
 		nm->next = NULL;
 		APPEND_MOVE(m, head, nm);
-		if (rank == start) {
+		if (rank == pawn_locations[c][0]) {
 			int two_forward = forward_tile + forward;
 			if (board[two_forward] == 0) {
 				move* nm = malloc(sizeof(move*));
 				nm->start = tile;
 				nm->end = two_forward;
+				nm->en_passant = 0;
+				nm->promotion = 0;
 				nm->next = NULL;
 				APPEND_MOVE(m, head, nm);
 			}
@@ -142,7 +152,6 @@ static move* get_pawn_moves(int board[64], int tile) {
 
 	// Captures
 	for (int i = 0; i < 2; i++) {
-		int c = (HAS_MASK(piece, white)) ? 0 : 1;
 		if (tiles_from_edge[tile][pawn_capture_directions[c][i]] > 0) {
 			int capture_direction = directions[pawn_capture_directions[c][i]];
 			int destination = tile + capture_direction;
@@ -151,15 +160,29 @@ static move* get_pawn_moves(int board[64], int tile) {
 				move* nm = malloc(sizeof(move*));
 				nm->start = tile;
 				nm->end = destination;
+				nm->en_passant = 0;
 				if (next_promotion)
 					nm->promotion = 1;
 				else
 					nm->promotion = 0;
 				nm->next = NULL;
 				APPEND_MOVE(m, head, nm);
-			}
 
-			// TODO: en passant
+			// En passant
+			} else if ((tile / 8) == pawn_locations[!c][3]) {
+				move* last_move = g->moves_tail;
+				if (two_pawn_push(last_move, board)) {
+					if (last_move->end == destination + pawn_locations[!c][2]) {
+						move* nm = malloc(sizeof(move*));
+						nm->start = tile;
+						nm->end = destination;
+						nm->en_passant = 1;
+						nm->promotion = 0;
+						nm->next = NULL;
+						APPEND_MOVE(m, head, nm);
+					}
+				}
+			}
 		}
 	}
 
@@ -185,6 +208,8 @@ static move* get_sliding_moves(int board[64], int tile) {
 			move* nm = malloc(sizeof(move*));
 			nm->start = tile;
 			nm->end = destination;
+			nm->en_passant = 0;
+			nm->promotion = 0;
 			nm->next = NULL;
 			APPEND_MOVE(m, head, nm);
 
@@ -211,6 +236,8 @@ static move* get_knight_moves(int board[64], int tile) {
 		move* nm = malloc(sizeof(move*));
 		nm->start = tile;
 		nm->end = knight_jumps[tile][i];
+		nm->en_passant = 0;
+		nm->promotion = 0;
 		nm->next = NULL;
 		APPEND_MOVE(m, head, nm);
 	}
@@ -219,15 +246,15 @@ static move* get_knight_moves(int board[64], int tile) {
 }
 
 // Gets moves for a specific piece
-move* get_piece_moves(int board[64], int tile) {
-	if (SLIDING_PIECE(board[tile])) {
-		return get_sliding_moves(board, tile);
+move* get_piece_moves(game* g, int tile) {
+	if (SLIDING_PIECE(g->board[tile])) {
+		return get_sliding_moves(g->board, tile);
 	}
-	if (PIECE_TYPE(board[tile]) == knight) {
-		return get_knight_moves(board, tile);
+	if (PIECE_TYPE(g->board[tile]) == knight) {
+		return get_knight_moves(g->board, tile);
 	}
-	if (PIECE_TYPE(board[tile]) == pawn) {
-		return get_pawn_moves(board, tile);
+	if (PIECE_TYPE(g->board[tile]) == pawn) {
+		return get_pawn_moves(g, tile);
 	}
 
 	// TODO: moves for king
@@ -242,7 +269,7 @@ move* get_moves(game* g) {
 	for (int i = 0; i < 64; i++) {
 		int piece = g->board[i];
 		if (HAS_MASK(piece, g->turn)) {
-			move* nm = get_piece_moves(g->board, i);
+			move* nm = get_piece_moves(g, i);
 			APPEND_MOVE(m, head, nm);
 			for (; m; m = m->next);
 		}

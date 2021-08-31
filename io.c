@@ -36,19 +36,13 @@ static char* tile_to_notation(int tile) {
 	return notation;
 }
 
-// Prints the board with highlights
-void render_board(int board[64], int highlights[64]) {
+// Prints the board with move highlights
+void render_board(int board[64], move* m) {
 	char board_buffer[8][17];
 	int rank = 7;
 	int file = 0;
 	for (int i = 0; i < 64; i++) {
 		board_buffer[rank][file] = ptoc(board[i]);
-		if (highlights[i]) {
-			if (board[i] != 0)
-				board_buffer[rank][file] = 'x';
-			else
-				board_buffer[rank][file] = '*';
-		}
 		board_buffer[rank][file+1] = ' ';
 		file += 2;
 		if (i % 8 == 7) {
@@ -57,6 +51,22 @@ void render_board(int board[64], int highlights[64]) {
 			rank--;
 		}
 	}
+
+	// Highlight moves
+	if (m) {
+		while (m) {
+			rank = 7 - (m->end / 8);
+			file = (m->end % 8) * 2;
+			if (board[m->end] != 0)
+				board_buffer[rank][file] = 'x';
+			else if (m->en_passant)
+				board_buffer[rank][file] = 'x';
+			else
+				board_buffer[rank][file] = '*';
+			m = m->next;
+		}
+	}
+
 	printf("\n   a b c d e f g h\n\n");
 	for (int i = 0; i < 8; i++) {
 		printf("%c  %s %c\n", '8' - i, board_buffer[i], '8' - i);
@@ -67,7 +77,6 @@ void render_board(int board[64], int highlights[64]) {
 // Creates a read-evaluate-print loop until a move is made
 void repl(game* g) {
 	int selected_tile = -1;
-	int highlights[64] = {0};
 	char prompt[PROMPT_LEN];
 	sprintf(prompt, "%s to move : ", (g->turn == white) ? "WHITE" : "black");
 
@@ -84,13 +93,11 @@ void repl(game* g) {
 			switch (command[0]) {
 				// Render board
 				case 'b':
-					render_board(g->board, highlights);
+					render_board(g->board, NULL);
 					continue;
 				// Cancel selection
 				case 'c':
 					selected_tile = -1;
-					for (int i = 0; i < 64; i++)
-						highlights[i] = 0;
 					sprintf(prompt, "%s to move : ", (g->turn == white) ? "WHITE" : "black");
 					continue;
 				// Move history
@@ -134,7 +141,7 @@ void repl(game* g) {
 				continue;
 			}
 				
-			move* m = get_piece_moves(g->board, selected_tile);
+			move* m = get_piece_moves(g, selected_tile);
 
 			if (!m) {
 				printf("piece has no moves\n");
@@ -143,13 +150,12 @@ void repl(game* g) {
 			}
 
 			sprintf(prompt, "%s to move (%s) : ", (g->turn == white) ? "WHITE" : "black", command);
+			render_board(g->board, m);
 			while (m) {
-				highlights[m->end] = 1;
 				move* om = m;
 				m = m->next;
 				free(om);
 			}
-			render_board(g->board, highlights);
 			continue;
 		}
 
@@ -169,7 +175,7 @@ void repl(game* g) {
 				printf("bad source tile\n");
 				continue;
 			}
-			move* m = get_piece_moves(g->board, start_tile);
+			move* m = get_piece_moves(g, start_tile);
 
 			// Check input move and make it
 			while (m) {
@@ -193,11 +199,15 @@ void repl(game* g) {
 								continue;
 							}
 							g->board[end_tile] = PIECE_TYPE(piece) | g->turn;
+							g->board[start_tile] = 0;
 							break;
 						}
-					} else
+					} else {
+						if (m->en_passant) 
+							g->board[g->moves_tail->end] = 0;
 						g->board[end_tile] = g->board[start_tile];
-					g->board[start_tile] = 0;
+						g->board[start_tile] = 0;
+					}
 					move* nm = malloc(sizeof(move*));
 					nm->start = start_tile;
 					nm->end = end_tile;
@@ -226,9 +236,8 @@ void repl(game* g) {
 void play(game* g) {
 
 	// Take commands
-	int highlights[64] = { 0 };
 	while (g->ended == not_finished) {
-		render_board(g->board, highlights);
+		render_board(g->board, NULL);
 		repl(g);
 		g->turn = (g->turn == white) ? black : white;
 	}

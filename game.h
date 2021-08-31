@@ -3,7 +3,7 @@
 // Copyright (C) 2021 Theo Henson.
 // Released under the GPL v3.0, see LICENSE.
 
-#define GAME_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
+#define GAME_FEN "rnbqkbnr/pppppppp/8/4P3/3p4/8/PPPPPPPP/RNBQKBNR"
 #define PROMPT_LEN 256
 #define HAS_MASK(piece, mask) ((piece & mask) == mask)
 #define PIECE_TYPE(piece) (piece & ~(white | black))
@@ -44,6 +44,7 @@ struct move {
 	int start;
 	int end;
 	int promotion;
+	int en_passant;
 	struct move* next;
 };
 typedef struct move move;
@@ -57,7 +58,7 @@ struct {
 } typedef game;
 
 // io.c
-void render_board(int[64], int[64]);
+void render_board(int[64], move* m);
 void repl(game*);
 void play(game*);
 
@@ -68,5 +69,5 @@ int ctop(char);
 
 // moves.c
 void compute_move_data();
-move* get_piece_moves(int[64], int);
+move* get_piece_moves(game*, int);
 move* get_moves(game*);
