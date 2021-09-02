@@ -11,7 +11,6 @@ int main(int argc, char* argv[]) {
 	game ng = {
 		.turn = white,
 		.board = { 0 },
-		.attack_map = { { 0 }, { 0 } },
 		.pieces = { NULL, NULL },
 		.moves_head = NULL,
 		.moves_tail = NULL,
@@ -19,6 +18,5 @@ int main(int argc, char* argv[]) {
 	};
 	game *g = &ng;
 	load_fen(GAME_FEN, g);
-	create_attack_map(g);
 	play(g);
 }

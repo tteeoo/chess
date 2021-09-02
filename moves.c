@@ -35,6 +35,7 @@ static int min(int a, int b) {
 	return b + (diff & dsgn);
 }
 
+// Returns whether a move was a double pawn push
 static int two_pawn_push(move* m, int board[64]) {
 	if (m) {
 		int piece = board[m->end];
@@ -47,9 +48,26 @@ static int two_pawn_push(move* m, int board[64]) {
 	return 0;
 }
 
+// Delete an item from a piece_list based on its tile value
+static piece_list* del_piece(piece_list* head, int tile) {
+	piece_list* p = head;
+	piece_list* last = NULL;
+	while (p) {
+		if (p->tile == tile) {
+			if (last)  {
+				last->next = p->next;
+				break;
+			} else
+				return p->next;
+		}
+		last = p;
+		p = p->next;
+	}
+	return head;
+}
+
 // Computes information about valid moves
 void compute_move_data() {
-
 	for (int tile = 0; tile < 64; tile++) {
 
 		// Calculate information for sliding moves
@@ -116,25 +134,28 @@ void compute_move_data() {
 
 // Makes a move
 void make_move(game* g, move* m) {
+	// TODO: deletion of pieces from piece_list
 	if (m->promotion) {
 		int piece = promotion_prompt();
 		g->board[m->end] = PIECE_TYPE(piece) | g->turn;
 		g->board[m->start] = 0;
 	} else {
-		if (m->en_passant) 
+		if (m->en_passant)
 			g->board[g->moves_tail->end] = 0;
 		g->board[m->end] = g->board[m->start];
 		g->board[m->start] = 0;
 	}
+
+	// Add to move history
 	move* nm = malloc(sizeof(move*));
 	nm->start = m->start;
 	nm->end = m->end;
 	nm->next = NULL;
-	if (!g->moves_tail) {
-		g->moves_head = nm;
+	if (g->moves_tail) {
+		g->moves_tail->next = nm;
 		g->moves_tail = nm;
 	} else {
-		g->moves_tail->next = nm;
+		g->moves_head = nm;
 		g->moves_tail = nm;
 	}
 }
@@ -328,15 +349,8 @@ move* get_moves(game* g, int c) {
 	return head;
 }
 
-// Creates attack maps
-void create_attack_map(game* g) {
-	for (int i = 0; i < 2; i++) {
-		move* m = get_moves(g, i);
-		while (m) {
-			g->attack_map[i][m->end]++;
-			move* om = m;
-			m = m->next;
-			free(om);
-		}
-	}
-}
+// TODO
+/* // Returns whether a tile is under attack by a specific color */
+/* int tile_attacked(int tile, int board[64], piece_color color) { */
+
+/* } */

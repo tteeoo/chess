@@ -29,27 +29,27 @@
 		} \
 	}
 
-enum piece_color {
+enum {
 	black = 8,
 	white = 16
-};
+} typedef piece_color;
 
-enum piece_type {
+enum {
 	pawn = 0,
 	knight = 1,
 	bishop = 2,
 	rook = 3,
 	queen = 4,
 	king = 5
-};
+} typedef piece_type;
 
-enum end_condition {
+enum {
 	not_finished,
 	by_checkmate,
 	by_stalemate,
 	by_repetition,
 	by_fifty_move
-};
+} typedef end_condition ;
 
 struct move {
 	int start;
@@ -67,13 +67,12 @@ struct piece_list {
 typedef struct piece_list piece_list;
 
 struct {
-	enum piece_color turn;
+	piece_color turn;
 	int board[64];
-	int attack_map[2][64];
 	piece_list* pieces[2];
 	move* moves_head;
 	move* moves_tail;
-	enum end_condition ended;
+	end_condition ended;
 } typedef game;
 
 // io.c
@@ -92,6 +91,3 @@ void compute_move_data();
 void make_move(game*, move*);
 move* get_piece_moves(game*, int);
 move* get_moves(game*, int);
-
-// check.c
-void create_attack_map(game*);
