@@ -17,6 +17,17 @@
 		(PIECE_TYPE(piece) == bishop) || \
 	(PIECE_TYPE(piece) == rook))
 
+// Appends an item to a linked list, initializing if necessary
+#define APPEND_LIST(tail, head, add) { \
+		if (!tail) { \
+			tail->next = add; \
+			tail = add; \
+		} else { \
+			head = add; \
+			tail = add; \
+		} \
+	}
+
 enum piece_color {
 	black = 8,
 	white = 16,
@@ -49,9 +60,19 @@ struct move {
 };
 typedef struct move move;
 
+struct tile_list {
+	int tile;
+	struct tile_list* next;
+};
+typedef struct tile_list tile_list;
+
 struct {
 	enum piece_color turn;
 	int board[64];
+	int attack_map_white[64];
+	int attack_map_black[64];
+	tile_list* tiles_white;
+	tile_list* tiles_black;
 	move* moves_head;
 	move* moves_tail;
 	enum end_condition ended;
@@ -73,3 +94,6 @@ void compute_move_data();
 void make_move(game*, move*);
 move* get_piece_moves(game*, int);
 move* get_moves(game*);
+
+// check.c
+void init_attack_maps(game*);

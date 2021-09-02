@@ -75,6 +75,7 @@ void load_fen(char* fen, game* g) {
 	int file = 0;
 	int rank = 7;
 
+	// Parse FEN data into board
 	for (int i = 0; i < strlen(fen); i++) {
 		if (fen[i] == ' ') {
 			// TODO: handle other FEN data
@@ -88,6 +89,24 @@ void load_fen(char* fen, game* g) {
 			} else {
 				g->board[rank * 8 + file] = ctop(fen[i]);
 				file++;
+			}
+		}
+	}
+
+	// Create tile lists from board
+	tile_list* tail_white;
+	tile_list* tail_black;
+	for (int i = 0; i < 64; i++) {
+		if (g->board[i] != 0) {
+			tile_list* tl = malloc(sizeof(tile_list*));
+			tl->tile = i;
+			switch (PIECE_COLOR(g->board[i])) {
+				case white:
+					APPEND_LIST(tail_white, g->tiles_white, tl);
+					break;
+				case black:
+					APPEND_LIST(tail_black, g->tiles_black, tl);
+					break;
 			}
 		}
 	}

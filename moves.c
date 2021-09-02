@@ -7,18 +7,8 @@
 
 #include "game.h"
 
+// The index for arrays pertaining to the color of a piece
 #define COL_I(piece) ((HAS_MASK(piece, white)) ? 0 : 1)
-
-// Appends a move to a linked list
-#define APPEND_MOVE(m, head, nm) { \
-		if (!m) { \
-			m = nm; \
-			head = nm; \
-		} else { \
-			m->next = nm; \
-			m = nm; \
-		} \
-	}
 
 // Values used to calculate valid move information
 static const int directions[] = { 8, -8, -1, 1, 7, -7, 9, -9 };
@@ -175,7 +165,7 @@ static move* get_pawn_moves(game* g, int tile) {
 		else
 			nm->promotion = 0;
 		nm->next = NULL;
-		APPEND_MOVE(m, head, nm);
+		APPEND_LIST(m, head, nm);
 		if (rank == pawn_locations[c][0]) {
 			int two_forward = forward_tile + forward;
 			if (board[two_forward] == 0) {
@@ -185,7 +175,7 @@ static move* get_pawn_moves(game* g, int tile) {
 				nm->en_passant = 0;
 				nm->promotion = 0;
 				nm->next = NULL;
-				APPEND_MOVE(m, head, nm);
+				APPEND_LIST(m, head, nm);
 			}
 		}
 	}
@@ -206,7 +196,7 @@ static move* get_pawn_moves(game* g, int tile) {
 				else
 					nm->promotion = 0;
 				nm->next = NULL;
-				APPEND_MOVE(m, head, nm);
+				APPEND_LIST(m, head, nm);
 
 			// En passant
 			} else if ((tile / 8) == pawn_locations[!c][3]) {
@@ -219,7 +209,7 @@ static move* get_pawn_moves(game* g, int tile) {
 						nm->en_passant = 1;
 						nm->promotion = 0;
 						nm->next = NULL;
-						APPEND_MOVE(m, head, nm);
+						APPEND_LIST(m, head, nm);
 					}
 				}
 			}
@@ -251,7 +241,7 @@ static move* get_sliding_moves(int board[64], int tile) {
 			nm->en_passant = 0;
 			nm->promotion = 0;
 			nm->next = NULL;
-			APPEND_MOVE(m, head, nm);
+			APPEND_LIST(m, head, nm);
 
 			if (HAS_MASK(occupying, PIECE_OCOLOR(piece)))
 				break;
@@ -279,7 +269,7 @@ static move* get_knight_moves(int board[64], int tile) {
 		nm->en_passant = 0;
 		nm->promotion = 0;
 		nm->next = NULL;
-		APPEND_MOVE(m, head, nm);
+		APPEND_LIST(m, head, nm);
 	}
 
 	return head;
@@ -303,7 +293,7 @@ static move* get_king_moves(int board[64], int tile) {
 		nm->en_passant = 0;
 		nm->promotion = 0;
 		nm->next = NULL;
-		APPEND_MOVE(m, head, nm);
+		APPEND_LIST(m, head, nm);
 	}
 
 	// TODO: castling
@@ -336,7 +326,7 @@ move* get_moves(game* g) {
 		int piece = g->board[i];
 		if (HAS_MASK(piece, g->turn)) {
 			move* nm = get_piece_moves(g, i);
-			APPEND_MOVE(m, head, nm);
+			APPEND_LIST(m, head, nm);
 			for (; m; m = m->next);
 		}
 	}
