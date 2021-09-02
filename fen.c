@@ -94,18 +94,18 @@ void load_fen(char* fen, game* g) {
 	}
 
 	// Create tile lists from board
-	tile_list* tail_white;
-	tile_list* tail_black;
+	piece_list* pl_white = NULL;
+	piece_list* pl_black = NULL;
 	for (int i = 0; i < 64; i++) {
 		if (g->board[i] != 0) {
-			tile_list* tl = malloc(sizeof(tile_list*));
-			tl->tile = i;
+			piece_list* p = malloc(sizeof(piece_list*));
+			p->tile = i;
 			switch (PIECE_COLOR(g->board[i])) {
 				case white:
-					APPEND_LIST(tail_white, g->tiles_white, tl);
+					APPEND_LIST(pl_white, g->pieces[0], p);
 					break;
 				case black:
-					APPEND_LIST(tail_black, g->tiles_black, tl);
+					APPEND_LIST(pl_black, g->pieces[1], p);
 					break;
 			}
 		}

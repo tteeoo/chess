@@ -8,18 +8,19 @@
 #define HAS_MASK(piece, mask) ((piece & mask) == mask)
 #define PIECE_TYPE(piece) (piece & ~(white | black))
 #define PIECE_COLOR(piece) (piece & ~(pawn | knight | bishop | rook | queen | king))
-
-#define PIECE_OCOLOR(piece) ((PIECE_COLOR(piece) == white) \
-	? black : ((PIECE_COLOR(piece) == black) ? white : no_color))
+#define PIECE_OCOLOR(piece) ((PIECE_COLOR(piece) == white) ? black : white)
 
 #define SLIDING_PIECE(piece) \
 	((PIECE_TYPE(piece) == queen) || \
 		(PIECE_TYPE(piece) == bishop) || \
 	(PIECE_TYPE(piece) == rook))
 
+// The index for arrays pertaining to the color of a piece
+#define COL_I(piece) ((HAS_MASK(piece, white)) ? 0 : 1)
+
 // Appends an item to a linked list, initializing if necessary
 #define APPEND_LIST(tail, head, add) { \
-		if (!tail) { \
+		if (tail) { \
 			tail->next = add; \
 			tail = add; \
 		} else { \
@@ -30,8 +31,7 @@
 
 enum piece_color {
 	black = 8,
-	white = 16,
-	no_color = 0
+	white = 16
 };
 
 enum piece_type {
@@ -60,19 +60,17 @@ struct move {
 };
 typedef struct move move;
 
-struct tile_list {
+struct piece_list {
 	int tile;
-	struct tile_list* next;
+	struct piece_list* next;
 };
-typedef struct tile_list tile_list;
+typedef struct piece_list piece_list;
 
 struct {
 	enum piece_color turn;
 	int board[64];
-	int attack_map_white[64];
-	int attack_map_black[64];
-	tile_list* tiles_white;
-	tile_list* tiles_black;
+	int attack_map[2][64];
+	piece_list* pieces[2];
 	move* moves_head;
 	move* moves_tail;
 	enum end_condition ended;
@@ -93,7 +91,7 @@ int ctop(char);
 void compute_move_data();
 void make_move(game*, move*);
 move* get_piece_moves(game*, int);
-move* get_moves(game*);
+move* get_moves(game*, int);
 
 // check.c
-void init_attack_maps(game*);
+void create_attack_map(game*);

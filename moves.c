@@ -7,9 +7,6 @@
 
 #include "game.h"
 
-// The index for arrays pertaining to the color of a piece
-#define COL_I(piece) ((HAS_MASK(piece, white)) ? 0 : 1)
-
 // Values used to calculate valid move information
 static const int directions[] = { 8, -8, -1, 1, 7, -7, 9, -9 };
 static const int knight_jump_offsets[] = { 15, 17, -17, -15, 10, -6, 6, -10 };
@@ -303,33 +300,43 @@ static move* get_king_moves(int board[64], int tile) {
 
 // Gets moves for a specific piece
 move* get_piece_moves(game* g, int tile) {
-	if (PIECE_TYPE(g->board[tile]) == pawn) {
-		return get_pawn_moves(g, tile);
+	switch (PIECE_TYPE(g->board[tile])) {
+		case pawn:
+			return get_pawn_moves(g, tile);
+		case knight:
+			return get_knight_moves(g->board, tile);
+		case king:
+			return get_king_moves(g->board, tile);
+		default:
+			return get_sliding_moves(g->board, tile);
 	}
-	if (SLIDING_PIECE(g->board[tile])) {
-		return get_sliding_moves(g->board, tile);
-	}
-	if (PIECE_TYPE(g->board[tile]) == knight) {
-		return get_knight_moves(g->board, tile);
-	}
-	if (PIECE_TYPE(g->board[tile]) == king) {
-		return get_king_moves(g->board, tile);
-	}
-	return NULL;
 }
 
-// Gets moves for the current side
-move* get_moves(game* g) {
+// Gets moves for a color index
+move* get_moves(game* g, int c) {
 	move* m = NULL;
 	move* head = NULL;
-	for (int i = 0; i < 64; i++) {
-		int piece = g->board[i];
-		if (HAS_MASK(piece, g->turn)) {
-			move* nm = get_piece_moves(g, i);
-			APPEND_LIST(m, head, nm);
-			for (; m; m = m->next);
+	piece_list * p = g->pieces[c];
+	while (p) {
+		move* nm = get_piece_moves(g, p->tile);
+		APPEND_LIST(m, head, nm);
+		if (m)
+			while (m->next) 
+				m = m->next;
+		p = p->next;
+	}
+	return head;
+}
+
+// Creates attack maps
+void create_attack_map(game* g) {
+	for (int i = 0; i < 2; i++) {
+		move* m = get_moves(g, i);
+		while (m) {
+			g->attack_map[i][m->end]++;
+			move* om = m;
+			m = m->next;
+			free(om);
 		}
 	}
-
-	return head;
 }

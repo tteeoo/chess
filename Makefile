@@ -4,12 +4,12 @@ LDFLAGS = `pkg-config --libs readline`
 TARGET = chess
 PREFIX = /usr/local
 
-objects = main.o fen.o io.o moves.o check.o
+objects = main.o fen.o io.o moves.o
 
 ${TARGET}: ${objects}
 	${CC} ${CFLAGS} -o ${TARGET} ${objects} ${LDFLAGS}
 
-main.o io.o fen.o moves.o check.o: game.h
+main.o io.o fen.o moves.o: game.h
 
 .PHONY: clean install 
 clean:

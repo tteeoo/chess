@@ -11,16 +11,14 @@ int main(int argc, char* argv[]) {
 	game ng = {
 		.turn = white,
 		.board = { 0 },
-		.attack_map_white = { 0 },
-		.attack_map_black = { 0 },
-		.tiles_white = NULL,
-		.tiles_black = NULL,
+		.attack_map = { { 0 }, { 0 } },
+		.pieces = { NULL, NULL },
 		.moves_head = NULL,
 		.moves_tail = NULL,
 		.ended = not_finished
 	};
 	game *g = &ng;
 	load_fen(GAME_FEN, g);
-
+	create_attack_map(g);
 	play(g);
 }
