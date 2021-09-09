@@ -155,7 +155,7 @@ void repl(game* g) {
 				continue;
 			}
 			selected_tile = notation_to_tile(command);
-			if (g->board[selected_tile] == 0 || !HAS_MASK(g->board[selected_tile], g->turn)) {
+			if (g->board[selected_tile] == 0 || !(PIECE_COLOR(g->board[selected_tile]) == g->turn)) {
 				printf("bad tile\n");
 				selected_tile = -1;
 				continue;
@@ -190,7 +190,7 @@ void repl(game* g) {
 			}
 			int start_tile = notation_to_tile(start);
 			int end_tile = notation_to_tile(end);
-			if (g->board[start_tile] == 0 || !HAS_MASK(g->board[start_tile], g->turn)) {
+			if (g->board[start_tile] == 0 || !(PIECE_COLOR(g->board[start_tile]) == g->turn)) {
 				printf("bad source tile\n");
 				continue;
 			}

@@ -5,10 +5,11 @@
 
 #define GAME_FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
 #define PROMPT_LEN 256
-#define HAS_MASK(piece, mask) ((piece & mask) == mask)
 #define PIECE_TYPE(piece) (piece & ~(white | black))
 #define PIECE_COLOR(piece) (piece & ~(pawn | knight | bishop | rook | queen | king))
 #define PIECE_OCOLOR(piece) ((PIECE_COLOR(piece) == white) ? black : white)
+#define SAME_COLOR(p1, p2) (PIECE_COLOR(p1) == PIECE_COLOR(p2))
+#define ENEMY_COLOR(p1, p2) (PIECE_COLOR(p1) == PIECE_OCOLOR(p2))
 
 #define SLIDING_PIECE(piece) \
 	((PIECE_TYPE(piece) == queen) || \
@@ -16,7 +17,7 @@
 	(PIECE_TYPE(piece) == rook))
 
 // The index for arrays pertaining to the color of a piece
-#define COL_I(piece) ((HAS_MASK(piece, white)) ? 0 : 1)
+#define COL_I(piece) ((PIECE_COLOR(piece) == white) ? 0 : 1)
 
 // Appends an item to a linked list, initializing if necessary
 #define APPEND_LIST(tail, head, add) { \

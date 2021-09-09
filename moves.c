@@ -134,10 +134,15 @@ void compute_move_data() {
 
 // Makes a move
 void make_move(game* g, move* m) {
-	// TODO: deletion of pieces from piece_list
+	// TODO
+	/* int piece = g->board[m->start]; */
+	/* int occupying = g->board[m->end]; */
+	/* if (ENEMY_COLOR(piece, occupying)) { */
+	/* 	del_piece(g->pieces[COL_I(piece)], m->end); */
+	/* } */
+
 	if (m->promotion) {
-		int piece = promotion_prompt();
-		g->board[m->end] = PIECE_TYPE(piece) | g->turn;
+		g->board[m->end] = PIECE_TYPE(promotion_prompt()) | g->turn;
 		g->board[m->start] = 0;
 	} else {
 		if (m->en_passant)
@@ -204,7 +209,7 @@ static move* get_pawn_moves(game* g, int tile) {
 			int capture_direction = directions[pawn_capture_directions[c][i]];
 			int destination = tile + capture_direction;
 			int occupying = board[destination];
-			if (HAS_MASK(occupying, PIECE_OCOLOR(piece))) {
+			if (ENEMY_COLOR(occupying, piece)) {
 				move* nm = malloc(sizeof(move*));
 				nm->start = tile;
 				nm->end = destination;
@@ -250,7 +255,7 @@ static move* get_sliding_moves(int board[64], int tile) {
 			int destination = tile + directions[di] * (i + 1);
 			int occupying = board[destination];
 
-			if (HAS_MASK(occupying, PIECE_COLOR(piece)))
+			if (SAME_COLOR(occupying, piece))
 				break;
 
 			move* nm = malloc(sizeof(move*));
@@ -261,7 +266,7 @@ static move* get_sliding_moves(int board[64], int tile) {
 			nm->next = NULL;
 			APPEND_LIST(m, head, nm);
 
-			if (HAS_MASK(occupying, PIECE_OCOLOR(piece)))
+			if (ENEMY_COLOR(occupying, piece))
 				break;
 		}
 	}
@@ -278,7 +283,7 @@ static move* get_knight_moves(int board[64], int tile) {
 	for (int i = 0; i < 8; i++) {
 		if (knight_jumps[tile][i] == -1)
 			continue;
-		if (HAS_MASK(board[knight_jumps[tile][i]], PIECE_COLOR(piece)))
+		if SAME_COLOR(board[knight_jumps[tile][i]], piece)
 			continue;
 
 		move* nm = malloc(sizeof(move*));
@@ -302,7 +307,7 @@ static move* get_king_moves(int board[64], int tile) {
 	for (int i = 0; i < 8; i++) {
 		if (king_moves[tile][i] == -1)
 			continue;
-		if (HAS_MASK(board[king_moves[tile][i]], PIECE_COLOR(piece)))
+		if (SAME_COLOR(board[king_moves[tile][i]], piece))
 			continue;
 
 		move* nm = malloc(sizeof(move*));

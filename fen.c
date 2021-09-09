@@ -34,7 +34,7 @@ char ptoc(int piece) {
 			c = 'k';
 			break;
 	}
-	if (HAS_MASK(piece, white))
+	if (PIECE_COLOR(piece) == white)
 		c = toupper(c);
 
 	return c;
