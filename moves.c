@@ -10,16 +10,22 @@
 // Values used to calculate valid move information
 static const int directions[] = { 8, -8, -1, 1, 7, -7, 9, -9 };
 static const int knight_jump_offsets[] = { 15, 17, -17, -15, 10, -6, 6, -10 };
-static const int pawn_capture_offsets[2][2] = { { 7, 9 }, { -9, -7 } };
 static const int pawn_capture_directions[2][2] = { { 4, 6 }, { 7, 5 } };
+// Start rank, next promotion rank, forward offset, two tile push rank
 static const int pawn_locations[2][4] = { { 1, 6, 8, 3 }, { 6, 1, -8, 4 } };
 
-// Stores information about vailid moves
+// Stores information about valid moves
 int tiles_from_edge[64][8];
 int knight_jumps[64][8];
-int pawn_captures_white[64][2];
-int pawn_captures_black[64][2];
 int king_moves[64][8];
+int king_distances[64][64];
+
+// TODO: keep track of
+// int king_tiles[2];
+// int queen_count[2]:
+// int bishop_count[2]:
+// int rook_count[2]:
+
 
 // Branchless maximum function
 static int max(int a, int b) {
@@ -100,22 +106,6 @@ void compute_move_data() {
 			}
 		}
 
-		// Calculate pawn attacks
-		pawn_captures_white[tile][0] = -1;
-		pawn_captures_black[tile][1] = -1;
-		if (file > 0) {
-			if (rank < 7)
-				pawn_captures_white[tile][0] = tile + pawn_capture_offsets[0][0];
-			if (rank > 0)
-				pawn_captures_black[tile][0] = tile + pawn_capture_offsets[1][0];
-		}
-		if (file < 7) {
-			if (rank < 7)
-				pawn_captures_white[tile][0] = tile + pawn_capture_offsets[0][1];
-			if (rank > 0)
-				pawn_captures_black[tile][0] = tile + pawn_capture_offsets[1][1];
-		}
-
 		// Calculate king moves
 		for (int i = 0; i < 8; i++) {
 			int move_tile = tile + directions[i];
@@ -128,6 +118,13 @@ void compute_move_data() {
 				else
 					king_moves[tile][i] = -1;
 			}
+		}
+		
+		// Calculate king distances
+		for (int t2 = 0; t2 < 64; t2++) {
+			int r2 = t2 / 8;
+			int f2 = t2 % 8;
+			king_distances[tile][t2] = max(abs(rank - r2), abs(file - f2));
 		}
 	}
 }
@@ -354,8 +351,21 @@ move* get_moves(game* g, int c) {
 	return head;
 }
 
-// TODO
-/* // Returns whether a tile is under attack by a specific color */
-/* int tile_attacked(int tile, int board[64], piece_color color) { */
+// Returns whether a tile is under attack by a specific color
+int tile_attacked(int tile, int board[64], piece_color color) {
+	int piece = board[tile];
 
-/* } */
+	// King
+	// TODO: use king tiles
+	// if (king_distances[tile][kings[]])
+
+	// Knight
+	for (int i = 0; i < 8; i++) {
+		if (knight_jumps[tile][i] == -1)
+			continue;
+		if (ENEMY_COLOR(piece, board[knight_jumps[tile][i]]))
+			return 1;
+	}
+
+	return 0;
+}
