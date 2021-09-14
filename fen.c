@@ -98,6 +98,14 @@ void load_fen(char* fen, game* g) {
 	piece_list* pl_black = NULL;
 	for (int i = 0; i < 64; i++) {
 		if (g->board[i] != 0) {
+			// King tile
+			if (PIECE_TYPE(g->board[i]) == king) {
+				if (PIECE_COLOR(g->board[i]) == white)
+					g->king_tiles[0] = i;
+				else
+					g->king_tiles[1] = i;
+			}
+
 			piece_list* p = malloc(sizeof(piece_list*));
 			p->tile = i;
 			switch (PIECE_COLOR(g->board[i])) {

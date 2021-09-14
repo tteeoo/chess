@@ -11,6 +11,7 @@ int main(int argc, char* argv[]) {
 	game ng = {
 		.turn = white,
 		.board = { 0 },
+		.king_tiles = { 0, 0 },
 		.pieces = { NULL, NULL },
 		.moves_head = NULL,
 		.moves_tail = NULL,

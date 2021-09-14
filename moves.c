@@ -20,13 +20,6 @@ int knight_jumps[64][8];
 int king_moves[64][8];
 int king_distances[64][64];
 
-// TODO: keep track of
-// int king_tiles[2];
-// int queen_count[2]:
-// int bishop_count[2]:
-// int rook_count[2]:
-
-
 // Branchless maximum function
 static int max(int a, int b) {
 	int diff = a - b;
@@ -137,6 +130,12 @@ void make_move(game* g, move* m) {
 	/* if (ENEMY_COLOR(piece, occupying)) { */
 	/* 	del_piece(g->pieces[COL_I(piece)], m->end); */
 	/* } */
+	switch (PIECE_TYPE(g->board[m->start])) {
+		case king:
+			// TODO: maybe make COL_I(g->turn) a property of g
+			g->king_tiles[COL_I(g->turn)] = m->end;
+			break;
+	}
 
 	if (m->promotion) {
 		g->board[m->end] = PIECE_TYPE(promotion_prompt()) | g->turn;
@@ -352,18 +351,18 @@ move* get_moves(game* g, int c) {
 }
 
 // Returns whether a tile is under attack by a specific color
-int tile_attacked(int tile, int board[64], piece_color color) {
-	int piece = board[tile];
+int tile_attacked(game* g, int tile) {
+	int piece = g->board[tile];
 
 	// King
-	// TODO: use king tiles
-	// if (king_distances[tile][kings[]])
+	if (king_distances[tile][g->king_tiles[OCOL_I(g->turn)]] == 1)
+		return 1;
 
 	// Knight
 	for (int i = 0; i < 8; i++) {
 		if (knight_jumps[tile][i] == -1)
 			continue;
-		if (ENEMY_COLOR(piece, board[knight_jumps[tile][i]]))
+		if (ENEMY_COLOR(piece, g->board[knight_jumps[tile][i]]))
 			return 1;
 	}
 

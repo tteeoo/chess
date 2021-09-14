@@ -18,6 +18,7 @@
 
 // The index for arrays pertaining to the color of a piece
 #define COL_I(piece) ((PIECE_COLOR(piece) == white) ? 0 : 1)
+#define OCOL_I(piece) ((PIECE_COLOR(piece) == white) ? 1 : 0)
 
 // Appends an item to a linked list, initializing if necessary
 #define APPEND_LIST(tail, head, add) { \
@@ -70,7 +71,12 @@ typedef struct piece_list piece_list;
 struct {
 	piece_color turn;
 	int board[64];
-	piece_list* pieces[2];
+	piece_list* pieces[2]; // maybe TODO
+	int king_tiles[2];
+// TODO: keep track of
+// int queen_count[2]:
+// int bishop_count[2]:
+// int rook_count[2]:
 	move* moves_head;
 	move* moves_tail;
 	end_condition ended;
