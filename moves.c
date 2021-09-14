@@ -132,6 +132,7 @@ void make_move(game* g, move* m) {
 	/* } */
 	switch (PIECE_TYPE(g->board[m->start])) {
 		case king:
+			printf("%d\n", tile_attacked(g, m->end));
 			// TODO: maybe make COL_I(g->turn) a property of g
 			g->king_tiles[COL_I(g->turn)] = m->end;
 			break;
@@ -352,8 +353,6 @@ move* get_moves(game* g, int c) {
 
 // Returns whether a tile is under attack by a specific color
 int tile_attacked(game* g, int tile) {
-	int piece = g->board[tile];
-
 	// King
 	if (king_distances[tile][g->king_tiles[OCOL_I(g->turn)]] == 1)
 		return 1;
@@ -362,7 +361,7 @@ int tile_attacked(game* g, int tile) {
 	for (int i = 0; i < 8; i++) {
 		if (knight_jumps[tile][i] == -1)
 			continue;
-		if (ENEMY_COLOR(piece, g->board[knight_jumps[tile][i]]))
+		if (g->board[knight_jumps[tile][i]] == (knight | g->oturn))
 			return 1;
 	}
 

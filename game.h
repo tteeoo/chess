@@ -9,7 +9,7 @@
 #define PIECE_COLOR(piece) (piece & ~(pawn | knight | bishop | rook | queen | king))
 #define PIECE_OCOLOR(piece) ((PIECE_COLOR(piece) == white) ? black : white)
 #define SAME_COLOR(p1, p2) (PIECE_COLOR(p1) == PIECE_COLOR(p2))
-#define ENEMY_COLOR(p1, p2) (PIECE_COLOR(p1) == PIECE_OCOLOR(p2))
+#define ENEMY_COLOR(p1, p2) (PIECE_COLOR(p1) != PIECE_OCOLOR(p2))
 
 #define SLIDING_PIECE(piece) \
 	((PIECE_TYPE(piece) == queen) || \
@@ -70,6 +70,7 @@ typedef struct piece_list piece_list;
 
 struct {
 	piece_color turn;
+	piece_color oturn;
 	int board[64];
 	piece_list* pieces[2]; // maybe TODO
 	int king_tiles[2];
@@ -98,3 +99,4 @@ void compute_move_data();
 void make_move(game*, move*);
 move* get_piece_moves(game*, int);
 move* get_moves(game*, int);
+int tile_attacked(game*, int);
