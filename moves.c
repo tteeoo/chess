@@ -325,13 +325,13 @@ static move* get_king_moves(int board[64], int tile) {
 move* get_piece_moves(game* g, int tile) {
 	switch (PIECE_TYPE(g->board[tile])) {
 		case pawn:
-			return get_pawn_moves(g, tile);
+			return legal_moves(g, get_pawn_moves(g, tile));
 		case knight:
-			return get_knight_moves(g->board, tile);
+			return legal_moves(g, get_knight_moves(g->board, tile));
 		case king:
-			return get_king_moves(g->board, tile);
+			return legal_moves(g, get_king_moves(g->board, tile));
 		default:
-			return get_sliding_moves(g->board, tile);
+			return legal_moves(g, get_sliding_moves(g->board, tile));
 	}
 }
 
@@ -366,4 +366,20 @@ int tile_attacked(game* g, int tile) {
 	}
 
 	return 0;
+}
+
+// Returns a list of legal moves given a list of pseudo legal moves
+move* legal_moves(game* g, move* m) {
+	move* head = m;
+	move* last_legal = NULL;
+	while (m) {
+		// TODO: function make undo move
+		// make move then check if king is attacked.
+			// if (tile_attacked(g, king_tiles[COL_I(g->turn)]))
+		// If it is, if head = m, head = m->next
+		// else, set last_legal->next = m, then last_legal = m
+		m = m->next;
+	}
+
+	return head;
 }
