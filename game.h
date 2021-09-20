@@ -9,7 +9,7 @@
 #define PIECE_COLOR(piece) (piece & ~(pawn | knight | bishop | rook | queen | king))
 #define PIECE_OCOLOR(piece) ((PIECE_COLOR(piece) == white) ? black : white)
 #define SAME_COLOR(p1, p2) (PIECE_COLOR(p1) == PIECE_COLOR(p2))
-#define ENEMY_COLOR(p1, p2) (PIECE_COLOR(p1) != PIECE_OCOLOR(p2))
+#define ENEMY_COLOR(p1, p2) (PIECE_COLOR(p1) == PIECE_OCOLOR(p2))
 
 #define SLIDING_PIECE(piece) \
 	((PIECE_TYPE(piece) == queen) || \
