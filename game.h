@@ -18,7 +18,6 @@
 
 // The index for arrays pertaining to the color of a piece
 #define COL_I(piece) ((PIECE_COLOR(piece) == white) ? 0 : 1)
-#define OCOL_I(piece) ((PIECE_COLOR(piece) == white) ? 1 : 0)
 
 // Appends an item to a linked list, initializing if necessary
 #define APPEND_LIST(tail, head, add) { \
@@ -51,7 +50,7 @@ enum {
 	by_stalemate,
 	by_repetition,
 	by_fifty_move
-} typedef end_condition ;
+} typedef end_condition;
 
 struct move {
 	int start;
@@ -84,9 +83,7 @@ struct {
 } typedef game;
 
 // io.c
-void render_board(int[64], move* m);
 int promotion_prompt();
-void repl(game*);
 void play(game*);
 
 // fen.c

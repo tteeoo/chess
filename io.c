@@ -53,18 +53,16 @@ void render_board(int board[64], move* m) {
 	}
 
 	// Highlight moves
-	if (m) {
-		while (m) {
-			rank = 7 - (m->end / 8);
-			file = (m->end % 8) * 2;
-			if (board[m->end] != 0)
-				board_buffer[rank][file] = 'x';
-			else if (m->en_passant)
-				board_buffer[rank][file] = 'x';
-			else
-				board_buffer[rank][file] = '*';
-			m = m->next;
-		}
+	while (m) {
+		rank = 7 - (m->end / 8);
+		file = (m->end % 8) * 2;
+		if (board[m->end] != 0)
+			board_buffer[rank][file] = 'x';
+		else if (m->en_passant)
+			board_buffer[rank][file] = 'x';
+		else
+			board_buffer[rank][file] = '*';
+		m = m->next;
 	}
 
 	printf("\n   a b c d e f g h\n\n");
@@ -74,6 +72,7 @@ void render_board(int board[64], move* m) {
 	printf("\n   a b c d e f g h\n\n");
 }
 
+// Returns type of piece to promote pawn to based on prompt
 int promotion_prompt() {
 	char* command;
 	int piece;
@@ -109,7 +108,6 @@ void repl(game* g) {
 		// One character commands
 		if (strlen(command) == 1) {
 			move* m = g->moves_head;
-			int i = 1;
 			switch (command[0]) {
 				// Render board
 				case 'b':
@@ -121,7 +119,8 @@ void repl(game* g) {
 					sprintf(prompt, "%s to move : ", (g->turn == white) ? "WHITE" : "black");
 					continue;
 				// Move history
-				case 'm':
+				case 'm': ;
+					int i = 1;
 					while (m) {
 						printf("%d. %s%s", i, tile_to_notation(m->start), tile_to_notation(m->end));
 						m = m->next;

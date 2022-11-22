@@ -351,10 +351,10 @@ move* get_moves(game* g, int c) {
 	return head;
 }
 
-// Returns whether a tile is under attack by a specific color
+// Returns whether a tile is under attack by the opponent color
 int tile_attacked(game* g, int tile) {
 	// King
-	if (king_distances[tile][g->king_tiles[OCOL_I(g->turn)]] == 1)
+	if (king_distances[tile][g->king_tiles[COL_I(g->oturn)]] == 1)
 		return 1;
 
 	// Knight
