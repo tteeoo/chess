@@ -95,6 +95,3 @@ int ctop(char);
 void compute_move_data();
 void make_move(game*, move*);
 move* get_piece_moves(game*, int);
-move* get_moves(game*, int);
-int tile_attacked(game*, int);
-move* legal_moves(game* g, move* m);

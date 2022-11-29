@@ -124,16 +124,17 @@ void compute_move_data() {
 
 // Makes a move
 void make_move(game* g, move* m) {
+
 	// TODO
-	/* int piece = g->board[m->start]; */
-	/* int occupying = g->board[m->end]; */
-	/* if (ENEMY_COLOR(piece, occupying)) { */
-	/* 	del_piece(g->pieces[COL_I(piece)], m->end); */
-	/* } */
-	switch (PIECE_TYPE(g->board[m->start])) {
+	int piece = g->board[m->start];
+	int occupying = g->board[m->end];
+	if (ENEMY_COLOR(piece, occupying)) {
+		del_piece(g->pieces[COL_I(piece)], m->end);
+	}
+
+	switch (PIECE_TYPE(piece)) {
 		case king:
 			printf("%d\n", tile_attacked(g, m->end));
-			// TODO: maybe make COL_I(g->turn) a property of g
 			g->king_tiles[COL_I(g->turn)] = m->end;
 			break;
 	}
@@ -325,13 +326,13 @@ static move* get_king_moves(int board[64], int tile) {
 move* get_piece_moves(game* g, int tile) {
 	switch (PIECE_TYPE(g->board[tile])) {
 		case pawn:
-			return legal_moves(g, get_pawn_moves(g, tile));
+			return filter_legal_moves(g, get_pawn_moves(g, tile));
 		case knight:
-			return legal_moves(g, get_knight_moves(g->board, tile));
+			return filter_legal_moves(g, get_knight_moves(g->board, tile));
 		case king:
-			return legal_moves(g, get_king_moves(g->board, tile));
+			return filter_legal_moves(g, get_king_moves(g->board, tile));
 		default:
-			return legal_moves(g, get_sliding_moves(g->board, tile));
+			return filter_legal_moves(g, get_sliding_moves(g->board, tile));
 	}
 }
 
@@ -339,7 +340,7 @@ move* get_piece_moves(game* g, int tile) {
 move* get_moves(game* g, int c) {
 	move* m = NULL;
 	move* head = NULL;
-	piece_list * p = g->pieces[c];
+	piece_list* p = g->pieces[c];
 	while (p) {
 		move* nm = get_piece_moves(g, p->tile);
 		APPEND_LIST(m, head, nm);
@@ -352,7 +353,7 @@ move* get_moves(game* g, int c) {
 }
 
 // Returns whether a tile is under attack by the opponent color
-int tile_attacked(game* g, int tile) {
+static int tile_attacked(game* g, int tile) {
 	// King
 	if (king_distances[tile][g->king_tiles[COL_I(g->oturn)]] == 1)
 		return 1;
@@ -365,11 +366,13 @@ int tile_attacked(game* g, int tile) {
 			return 1;
 	}
 
+	// TODO: sliding pieces
+
 	return 0;
 }
 
 // Returns a list of legal moves given a list of pseudo legal moves
-move* legal_moves(game* g, move* m) {
+static move* filter_legal_moves(game* g, move* m) {
 	move* head = m;
 	move* last_legal = NULL;
 	while (m) {
