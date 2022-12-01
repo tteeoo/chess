@@ -220,7 +220,6 @@ void play(game* g) {
 		render_board(g->board, NULL);
 		repl(g);
 		g->turn = (g->turn == white) ? black : white;
-		g->oturn = (g->turn == white) ? black : white;
 	}
 
 	// Handle endings

@@ -10,7 +10,6 @@ int main(int argc, char* argv[]) {
 	compute_move_data();
 	game ng = {
 		.turn = white,
-		.oturn = black,
 		.board = { 0 },
 		.king_tiles = { 0, 0 },
 		.pieces = { NULL, NULL },

@@ -125,14 +125,15 @@ void compute_move_data() {
 // Makes a move
 void make_move(game* g, move* m) {
 
-	// TODO
+	// Delete any captured piece from board
 	int piece = g->board[m->start];
 	int occupying = g->board[m->end];
 	if (ENEMY_COLOR(piece, occupying)) {
-		del_piece(g->pieces[COL_I(piece)], m->end);
+		del_piece(g->pieces[!COL_I(piece)], m->end);
 	}
 
 	switch (PIECE_TYPE(piece)) {
+		// Track kings
 		case king:
 			printf("%d\n", tile_attacked(g, m->end));
 			g->king_tiles[COL_I(g->turn)] = m->end;
@@ -140,12 +141,18 @@ void make_move(game* g, move* m) {
 	}
 
 	if (m->promotion) {
+		// Create promoted piece
 		g->board[m->end] = PIECE_TYPE(promotion_prompt()) | g->turn;
 		g->board[m->start] = 0;
 	} else {
-		if (m->en_passant)
+		// Manage piece list/capturing for en passant
+		if (m->en_passant) {
 			g->board[g->moves_tail->end] = 0;
-		g->board[m->end] = g->board[m->start];
+			del_piece(g->pieces[!COL_I(piece)], g->moves_tail->end);
+		}
+
+		// Move the piece
+		g->board[m->end] = piece;
 		g->board[m->start] = 0;
 	}
 
@@ -355,14 +362,14 @@ move* get_moves(game* g, int c) {
 // Returns whether a tile is under attack by the opponent color
 static int tile_attacked(game* g, int tile) {
 	// King
-	if (king_distances[tile][g->king_tiles[COL_I(g->oturn)]] == 1)
+	if (king_distances[tile][g->king_tiles[!COL_I(g->turn)]] == 1)
 		return 1;
 
 	// Knight
 	for (int i = 0; i < 8; i++) {
 		if (knight_jumps[tile][i] == -1)
 			continue;
-		if (g->board[knight_jumps[tile][i]] == (knight | g->oturn))
+		if (g->board[knight_jumps[tile][i]] == (knight | (!g->turn))
 			return 1;
 	}
 

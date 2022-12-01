@@ -1,5 +1,4 @@
 Implement true legal moves
-Where does the piece get removed in en passant?
-Do piece_list modification for en passant and promotion
+Change piece moves location
 Figure out 'static functions'
 Sliding pieces to tile attacked

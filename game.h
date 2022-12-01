@@ -69,7 +69,6 @@ typedef struct piece_list piece_list;
 
 struct {
 	piece_color turn;
-	piece_color oturn;
 	int board[64];
 	piece_list* pieces[2]; // maybe TODO
 	int king_tiles[2];
