@@ -65,6 +65,41 @@ static piece_list* del_piece(piece_list* head, int tile) {
 	return head;
 }
 
+// Returns whether a tile is under attack by the opponent color
+static int tile_attacked(game* g, int tile) {
+	// King
+	if (king_distances[tile][g->king_tiles[!COL_I(g->turn)]] == 1)
+		return 1;
+
+	// Knight
+	for (int i = 0; i < 8; i++) {
+		if (knight_jumps[tile][i] == -1)
+			continue;
+		if (g->board[knight_jumps[tile][i]] == (knight | (!g->turn)))
+			return 1;
+	}
+
+	// TODO: sliding pieces
+
+	return 0;
+}
+
+// Returns a list of legal moves given a list of pseudo legal moves
+static move* filter_legal_moves(game* g, move* m) {
+	move* head = m;
+	// move* last_legal = NULL;
+	while (m) {
+		// TODO: function make undo move
+		// make move then check if king is attacked.
+			// if (tile_attacked(g, king_tiles[COL_I(g->turn)]))
+		// If it is, if head = m, head = m->next
+		// else, set last_legal->next = m, then last_legal = m
+		m = m->next;
+	}
+
+	return head;
+}
+
 // Computes information about valid moves
 void compute_move_data() {
 	for (int tile = 0; tile < 64; tile++) {
@@ -356,40 +391,5 @@ move* get_moves(game* g, int c) {
 				m = m->next;
 		p = p->next;
 	}
-	return head;
-}
-
-// Returns whether a tile is under attack by the opponent color
-static int tile_attacked(game* g, int tile) {
-	// King
-	if (king_distances[tile][g->king_tiles[!COL_I(g->turn)]] == 1)
-		return 1;
-
-	// Knight
-	for (int i = 0; i < 8; i++) {
-		if (knight_jumps[tile][i] == -1)
-			continue;
-		if (g->board[knight_jumps[tile][i]] == (knight | (!g->turn))
-			return 1;
-	}
-
-	// TODO: sliding pieces
-
-	return 0;
-}
-
-// Returns a list of legal moves given a list of pseudo legal moves
-static move* filter_legal_moves(game* g, move* m) {
-	move* head = m;
-	move* last_legal = NULL;
-	while (m) {
-		// TODO: function make undo move
-		// make move then check if king is attacked.
-			// if (tile_attacked(g, king_tiles[COL_I(g->turn)]))
-		// If it is, if head = m, head = m->next
-		// else, set last_legal->next = m, then last_legal = m
-		m = m->next;
-	}
-
 	return head;
 }
