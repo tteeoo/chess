@@ -80,6 +80,22 @@ static int tile_attacked(game* g, int tile) {
 	}
 
 	// TODO: sliding pieces
+//
+//	for (int di = 0; di < 8; di++) {
+//		for (int i = 0; i < tiles_from_edge[tile][di]; i++) {
+//
+//			int destination = tile + directions[di] * (i + 1);
+//			int occupying = board[destination];
+//
+//			if (SAME_COLOR(occupying, piece))
+//				break;
+//
+//			if (ENEMY_COLOR(occupying, piece)) {
+//				// Check if occupying piece type is consistent with direction
+//				break;
+//			}
+//		}
+//	}
 
 	return 0;
 }
