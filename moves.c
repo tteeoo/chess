@@ -67,35 +67,49 @@ static piece_list* del_piece(piece_list* head, int tile) {
 
 // Returns whether a tile is under attack by the opponent color
 static int tile_attacked(game* g, int tile) {
+
+	// Less dereferencing of board
+	int* board = g->board;
+	int piece = board[tile];
+
 	// King
 	if (king_distances[tile][g->king_tiles[!COL_I(g->turn)]] == 1)
 		return 1;
 
 	// Knight
 	for (int i = 0; i < 8; i++) {
-		if (knight_jumps[tile][i] == -1)
-			continue;
-		if (g->board[knight_jumps[tile][i]] == (knight | (!g->turn)))
+		if (board[knight_jumps[tile][i]] == (knight | (!g->turn)))
 			return 1;
 	}
 
-	// TODO: sliding pieces
-//
-//	for (int di = 0; di < 8; di++) {
-//		for (int i = 0; i < tiles_from_edge[tile][di]; i++) {
-//
-//			int destination = tile + directions[di] * (i + 1);
-//			int occupying = board[destination];
-//
-//			if (SAME_COLOR(occupying, piece))
-//				break;
-//
-//			if (ENEMY_COLOR(occupying, piece)) {
-//				// Check if occupying piece type is consistent with direction
-//				break;
-//			}
-//		}
-//	}
+	// Sliding pieces
+	for (int di = 0; di < 8; di++) {
+		for (int i = 0; i < tiles_from_edge[tile][di]; i++) {
+
+			int destination = tile + directions[di] * (i + 1);
+			int occupying = board[destination];
+
+			if (SAME_COLOR(occupying, piece))
+				break;
+
+			// Check if occupying piece type is consistent with direction
+			if (ENEMY_COLOR(occupying, piece)) {
+				switch (PIECE_TYPE(occupying)) {
+				case queen:
+					return 1;
+				case rook:
+					if (di < 4)
+						return 1;
+					break;
+				case bishop:
+					if (di > 3)
+						return 1;
+					break;
+				}
+				break;
+			}
+		}
+	}
 
 	return 0;
 }
