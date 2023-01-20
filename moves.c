@@ -195,6 +195,29 @@ void compute_move_data() {
 	}
 }
 
+// Revokes the previous move
+void undo_move(game* g) {
+
+	move* prevm = g->moves_tail;
+
+	// Fix move history
+	move* mhead = g->moves_head;
+	while (mhead) {
+		if (mhead->next == prevm) {
+			g->moves_tail = mhead;
+			break;
+		}
+		mhead = mhead->next;
+	}
+	
+	// Move piece back (depromote)
+	
+	// Uncapture (en passant case)
+
+	free(prevm);
+}
+
+// TODO: set captured
 // Makes a move
 void make_move(game* g, move* m) {
 

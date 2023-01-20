@@ -1,3 +1,4 @@
-Implement true legal moves
-Change piece moves location
-Sliding pieces to tile attacked
+True legal moves
+Castling
+Change piece location in piece list on move
+Chess engine

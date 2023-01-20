@@ -55,6 +55,7 @@ enum {
 struct move {
 	int start;
 	int end;
+	//int captured;
 	int promotion;
 	int en_passant;
 	struct move* next;
@@ -70,7 +71,7 @@ typedef struct piece_list piece_list;
 struct {
 	piece_color turn;
 	int board[64];
-	piece_list* pieces[2]; // maybe TODO
+	piece_list* pieces[2];
 	int king_tiles[2];
 // TODO: keep track of
 // int queen_count[2]:
