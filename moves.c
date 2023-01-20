@@ -82,6 +82,14 @@ static int tile_attacked(game* g, int tile) {
 			return 1;
 	}
 
+	// Pawn
+	int p1 = pawn_capture_directions[COL_I(piece)][0];
+	if (ENEMY_COLOR(p1, piece) && (PIECE_TYPE(p1) == pawn))
+		return 1;
+	int p2 = pawn_capture_directions[COL_I(piece)][1];
+	if (ENEMY_COLOR(p2, piece) && (PIECE_TYPE(p2) == pawn))
+		return 1;
+
 	// Sliding pieces
 	for (int di = 0; di < 8; di++) {
 		for (int i = 0; i < tiles_from_edge[tile][di]; i++) {
