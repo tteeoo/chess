@@ -55,7 +55,7 @@ enum {
 struct move {
 	int start;
 	int end;
-	//int captured;
+	int captured;
 	int promotion;
 	int en_passant;
 	struct move* next;

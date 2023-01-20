@@ -122,6 +122,17 @@ static int tile_attacked(game* g, int tile) {
 	return 0;
 }
 
+static move* new_move(int start, int end, int captured, int promotion, int en_passant, move* next) {
+	move* nm = malloc(sizeof(move));
+	nm->start = start;
+	nm->end = end;
+	nm->captured = captured;
+	nm->promotion = promotion;
+	nm->en_passant = en_passant;
+	nm->next = next;
+	return nm;
+}
+
 // Returns a list of legal moves given a list of pseudo legal moves
 static move* filter_legal_moves(game* g, move* m) {
 	move* head = m;
@@ -253,16 +264,12 @@ void make_move(game* g, move* m) {
 	}
 
 	// Add to move history
-	move* nm = malloc(sizeof(move*));
-	nm->start = m->start;
-	nm->end = m->end;
-	nm->next = NULL;
 	if (g->moves_tail) {
-		g->moves_tail->next = nm;
-		g->moves_tail = nm;
+		g->moves_tail->next = m;
+		g->moves_tail = m;
 	} else {
-		g->moves_head = nm;
-		g->moves_tail = nm;
+		g->moves_head = m;
+		g->moves_tail = m;
 	}
 }
 
@@ -280,25 +287,12 @@ static move* get_pawn_moves(game* g, int tile) {
 	// Forward
 	int forward_tile = tile + forward;
 	if (board[forward_tile] == 0) {
-		move* nm = malloc(sizeof(move*));
-		nm->start = tile;
-		nm->end = forward_tile;
-		nm->en_passant = 0;
-		if (next_promotion)
-			nm->promotion = 1;
-		else
-			nm->promotion = 0;
-		nm->next = NULL;
+		move* nm = new_move(tile, forward_tile, 0, next_promotion ? 1 : 0, 0, NULL);
 		APPEND_LIST(m, head, nm);
 		if (rank == pawn_locations[c][0]) {
 			int two_forward = forward_tile + forward;
 			if (board[two_forward] == 0) {
-				move* nm = malloc(sizeof(move*));
-				nm->start = tile;
-				nm->end = two_forward;
-				nm->en_passant = 0;
-				nm->promotion = 0;
-				nm->next = NULL;
+				move* nm = new_move(tile, two_forward, 0, 0, 0, NULL);
 				APPEND_LIST(m, head, nm);
 			}
 		}
@@ -311,30 +305,15 @@ static move* get_pawn_moves(game* g, int tile) {
 			int destination = tile + capture_direction;
 			int occupying = board[destination];
 			if (ENEMY_COLOR(occupying, piece)) {
-				move* nm = malloc(sizeof(move*));
-				nm->start = tile;
-				nm->end = destination;
-				nm->en_passant = 0;
-				if (next_promotion)
-					nm->promotion = 1;
-				else
-					nm->promotion = 0;
-				nm->next = NULL;
+				move* nm = new_move(tile, destination, g->board[destination], next_promotion ? 1 : 0, 0, NULL);
 				APPEND_LIST(m, head, nm);
 
 			// En passant
 			} else if ((tile / 8) == pawn_locations[!c][3]) {
 				move* last_move = g->moves_tail;
-				if (two_pawn_push(last_move, board)) {
-					if (last_move->end == destination + pawn_locations[!c][2]) {
-						move* nm = malloc(sizeof(move*));
-						nm->start = tile;
-						nm->end = destination;
-						nm->en_passant = 1;
-						nm->promotion = 0;
-						nm->next = NULL;
-						APPEND_LIST(m, head, nm);
-					}
+				if (two_pawn_push(last_move, board) && (last_move->end == destination + pawn_locations[!c][2])) {
+					move* nm = new_move(tile, destination, 0, 0, 1, NULL);
+					APPEND_LIST(m, head, nm);
 				}
 			}
 		}
@@ -359,12 +338,7 @@ static move* get_sliding_moves(int board[64], int tile) {
 			if (SAME_COLOR(occupying, piece))
 				break;
 
-			move* nm = malloc(sizeof(move*));
-			nm->start = tile;
-			nm->end = destination;
-			nm->en_passant = 0;
-			nm->promotion = 0;
-			nm->next = NULL;
+			move* nm = new_move(tile, destination, board[destination], 0, 0, NULL);
 			APPEND_LIST(m, head, nm);
 
 			if (ENEMY_COLOR(occupying, piece))
@@ -387,12 +361,7 @@ static move* get_knight_moves(int board[64], int tile) {
 		if SAME_COLOR(board[knight_jumps[tile][i]], piece)
 			continue;
 
-		move* nm = malloc(sizeof(move*));
-		nm->start = tile;
-		nm->end = knight_jumps[tile][i];
-		nm->en_passant = 0;
-		nm->promotion = 0;
-		nm->next = NULL;
+		move* nm = new_move(tile, knight_jumps[tile][i], board[knight_jumps[tile][i]], 0, 0, NULL);
 		APPEND_LIST(m, head, nm);
 	}
 
@@ -411,12 +380,7 @@ static move* get_king_moves(int board[64], int tile) {
 		if (SAME_COLOR(board[king_moves[tile][i]], piece))
 			continue;
 
-		move* nm = malloc(sizeof(move*));
-		nm->start = tile;
-		nm->end = king_moves[tile][i];
-		nm->en_passant = 0;
-		nm->promotion = 0;
-		nm->next = NULL;
+		move* nm = new_move(tile, king_moves[tile][i], board[king_moves[tile][i]], 0, 0, NULL);
 		APPEND_LIST(m, head, nm);
 	}
 
