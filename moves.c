@@ -66,6 +66,7 @@ static piece_list* del_piece(piece_list* head, int tile) {
 }
 
 // Returns whether a tile is under attack by the opponent color
+//   Technically not general, as doesn't include en passant attacks; meant for king
 static int tile_attacked(game* g, int tile) {
 
 	// Less dereferencing of board
@@ -83,12 +84,15 @@ static int tile_attacked(game* g, int tile) {
 	}
 
 	// Pawn
-	int p1 = pawn_capture_directions[COL_I(piece)][0];
-	if (ENEMY_COLOR(p1, piece) && (PIECE_TYPE(p1) == pawn))
-		return 1;
-	int p2 = pawn_capture_directions[COL_I(piece)][1];
-	if (ENEMY_COLOR(p2, piece) && (PIECE_TYPE(p2) == pawn))
-		return 1;
+	for (int i = 0; i < 2; i++) {
+		if (tiles_from_edge[tile][pawn_capture_directions[COL_I(piece)][i]] > 0) {
+			int capture_direction = directions[pawn_capture_directions[COL_I(piece)][i]];
+			int destination = tile + capture_direction;
+			int occupying = board[destination];
+			if (ENEMY_COLOR(occupying, piece) && (PIECE_TYPE(occupying) == pawn))
+				return 1;
+		}
+	}
 
 	// Sliding pieces
 	for (int di = 0; di < 8; di++) {
@@ -133,20 +137,72 @@ static move* new_move(int start, int end, int captured, int promotion, int en_pa
 	return nm;
 }
 
-// Returns a list of legal moves given a list of pseudo legal moves
-static move* filter_legal_moves(game* g, move* m) {
-	move* head = m;
-	// move* last_legal = NULL;
-	while (m) {
-		// TODO: function make undo move
-		// make move then check if king is attacked.
-			// if (tile_attacked(g, king_tiles[COL_I(g->turn)]))
-		// If it is, if head = m, head = m->next
-		// else, set last_legal->next = m, then last_legal = m
-		m = m->next;
+// Revokes the previous move
+static void undo_move(game* g) {
+
+	// Save most recent move
+	move* prevm = g->moves_tail;
+
+	// Fix move history
+	move* ntail = g->moves_head;
+	while (ntail) {
+		if (ntail->next == prevm) {
+			g->moves_tail = ntail;
+			break;
+		}
+		ntail = ntail->next;
 	}
 
-	return head;
+	int piece = g->board[prevm->end];
+	
+	// Track kings
+	if (PIECE_TYPE(piece) == king)
+		g->king_tiles[COL_I(PIECE_COLOR(piece))] = prevm->start;
+
+	// Create old piece (and depromote)
+	if (prevm->promotion)
+		g->board[prevm->start] = (PIECE_COLOR(piece) | pawn);
+	else
+		g->board[prevm->start] = piece;
+	// Uncapture
+	g->board[prevm->end] = prevm->captured;
+	// En passant case
+	if (prevm->en_passant)
+		g->board[g->moves_tail->end] = (PIECE_OCOLOR(piece) | pawn);
+	
+	
+	// TODO: castling case
+}
+
+// Returns a list of legal moves given a list of pseudo legal moves
+static move* filter_legal_moves(game* g, move* m) {
+	move* legal_head = NULL;
+	move* legal_tail = NULL;
+
+	while (m) {
+		// Play each move
+		make_move(g, m);
+		// If king is not attacked, copy and add to legal moves
+		if (!tile_attacked(g, g->king_tiles[COL_I(g->turn)])) {
+			printf("n\n");
+			move* lm = new_move(m->start, m->end, m->captured, m->promotion, m->en_passant, NULL);
+			APPEND_LIST(legal_tail, legal_head, lm);
+		} else {
+			printf("y\n");
+		}
+		undo_move(g);
+		m = m->next;
+	}
+	// Free pseudo-legal list
+	while (m) {
+		move* om = m;
+		m = m->next;
+		free(om);
+	}
+
+	printf("%d %d\n", g->king_tiles[0], g->king_tiles[1]);
+
+	return legal_head;
 }
 
 // Computes information about valid moves
@@ -206,28 +262,6 @@ void compute_move_data() {
 	}
 }
 
-// Revokes the previous move
-void undo_move(game* g) {
-
-	move* prevm = g->moves_tail;
-
-	// Fix move history
-	move* mhead = g->moves_head;
-	while (mhead) {
-		if (mhead->next == prevm) {
-			g->moves_tail = mhead;
-			break;
-		}
-		mhead = mhead->next;
-	}
-	
-	// Move piece back (depromote)
-	
-	// Uncapture (en passant case)
-
-	free(prevm);
-}
-
 // TODO: set captured
 // Makes a move
 void make_move(game* g, move* m) {
@@ -239,13 +273,9 @@ void make_move(game* g, move* m) {
 		del_piece(g->pieces[!COL_I(piece)], m->end);
 	}
 
-	switch (PIECE_TYPE(piece)) {
-		// Track kings
-		case king:
-			printf("%d\n", tile_attacked(g, m->end));
-			g->king_tiles[COL_I(g->turn)] = m->end;
-			break;
-	}
+	// Track kings
+	if (PIECE_TYPE(piece) == king)
+		g->king_tiles[COL_I(g->turn)] = m->end;
 
 	if (m->promotion) {
 		// Create promoted piece

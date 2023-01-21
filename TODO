@@ -1,4 +1,4 @@
-True legal moves
 Castling
-Change piece location in piece list on move
+Track piece_list outside of make/undo_move
+End game due to checkmate (no moves possible)
 Chess engine
