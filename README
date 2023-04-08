@@ -10,4 +10,4 @@ Commands:
 * <tile> - select piece
 * <tile><tile> - move piece
 
-Some parts inspired by (no line-for-line code): https://github.com/SebLague/Chess-AI
+Inspired by: https://github.com/SebLague/Chess-AI

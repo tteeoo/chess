@@ -167,7 +167,7 @@ static void undo_move(game* g) {
 		g->board[prevm->start] = piece;
 	// Uncapture
 	g->board[prevm->end] = prevm->captured;
-	// En passant case
+	// En passant case (moves_tail->end is now the would-be location of the victim pawn)
 	if (prevm->en_passant)
 		g->board[g->moves_tail->end] = (PIECE_OCOLOR(piece) | pawn);
 	
@@ -263,7 +263,6 @@ void compute_move_data() {
 	}
 }
 
-// TODO: set captured
 // Makes a move
 void make_move(game* g, move* m) {
 
@@ -275,8 +274,15 @@ void make_move(game* g, move* m) {
 	}
 
 	// Track kings
-	if (PIECE_TYPE(piece) == king)
+	if (PIECE_TYPE(piece) == king) {
 		g->king_tiles[COL_I(g->turn)] = m->end;
+		// For castling
+		g->king_moved[COL_I(piece)] = 1;
+	} else if (PIECE_TYPE(piece) == rook) {
+		// Track rooks for castling (second array, 1 is h, 0 is a)
+		g->rook_moved[COL_I(piece)][m->start % 8 == 7 ? 1 : 0] = 1;
+	}
+
 
 	if (m->promotion) {
 		// Create promoted piece
