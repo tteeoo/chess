@@ -58,6 +58,7 @@ struct move {
 	int captured;
 	int promotion;
 	int en_passant;
+	int castle;
 	struct move* next;
 };
 typedef struct move move;
@@ -73,6 +74,8 @@ struct {
 	int board[64];
 	piece_list* pieces[2];
 	int king_tiles[2];
+	int king_moved[2];
+	int rook_moved[2][2];
 // TODO: keep track of
 // int queen_count[2]:
 // int bishop_count[2]:

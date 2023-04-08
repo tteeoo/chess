@@ -12,6 +12,8 @@ int main(int argc, char* argv[]) {
 		.turn = white,
 		.board = { 0 },
 		.king_tiles = { 0, 0 },
+		.king_moved = {0, 0},
+		.rook_moved = { {0, 0}, {0, 0} },
 		.pieces = { NULL, NULL },
 		.moves_head = NULL,
 		.moves_tail = NULL,
