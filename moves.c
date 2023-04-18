@@ -406,22 +406,43 @@ static move* get_knight_moves(int board[64], int tile) {
 }
 
 // Gets moves for a king
-static move* get_king_moves(int board[64], int tile) {
+static move* get_king_moves(game* g, int tile) {
 	move* m = NULL;
 	move* head = NULL;
-	int piece = board[tile];
+	int piece = g->board[tile];
 
 	for (int i = 0; i < 8; i++) {
 		if (king_moves[tile][i] == -1)
 			continue;
-		if (SAME_COLOR(board[king_moves[tile][i]], piece))
+		if (SAME_COLOR(g->board[king_moves[tile][i]], piece))
 			continue;
 
-		move* nm = new_move(tile, king_moves[tile][i], board[king_moves[tile][i]], 0, 0, 0, NULL);
+		move* nm = new_move(tile, king_moves[tile][i], g->board[king_moves[tile][i]], 0, 0, 0, NULL);
 		APPEND_LIST(m, head, nm);
 	}
 
-	// TODO: castling
+	// Castling di = 3 is right, = 2 is left
+	//if (!g->king_moved[COL_I(piece)]) {
+		//for (int i = 0; i < tiles_from_edge[tile][3]; i++) {
+			//int destination = tile + directions[3] * (i + 1);
+			//int occupying = g->board[destination];
+//
+			//if ((PIECE_TYPE(occupying) == rook) && (!g->rook_moved[COL_I(piece)][1])) {
+				//move* nm = new_move(tile, destination - 1, g->board[king_moves[tile][i]], 0, 0, 0, NULL);
+				//APPEND_LIST(m, head, nm);
+				//break;
+			//}
+//
+			//if (SAME_COLOR(occupying, piece))
+				//break;
+//
+			//move* nm = new_move(tile, destination, board[destination], 0, 0, 0, NULL);
+			//APPEND_LIST(m, head, nm);
+//
+			//if (ENEMY_COLOR(occupying, piece))
+				//break;
+		//}
+	//}
 
 	return head;
 }
@@ -434,7 +455,7 @@ move* get_piece_moves(game* g, int tile) {
 		case knight:
 			return filter_legal_moves(g, get_knight_moves(g->board, tile));
 		case king:
-			return filter_legal_moves(g, get_king_moves(g->board, tile));
+			return filter_legal_moves(g, get_king_moves(g, tile));
 		default:
 			return filter_legal_moves(g, get_sliding_moves(g->board, tile));
 	}
