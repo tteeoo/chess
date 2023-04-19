@@ -107,16 +107,16 @@ static int tile_attacked(game* g, int tile) {
 			// Check if occupying piece type is consistent with direction
 			if (ENEMY_COLOR(occupying, piece)) {
 				switch (PIECE_TYPE(occupying)) {
-				case queen:
-					return 1;
-				case rook:
-					if (di < 4)
+					case queen:
 						return 1;
-					break;
-				case bishop:
-					if (di > 3)
-						return 1;
-					break;
+					case rook:
+						if (di < 4)
+							return 1;
+						break;
+					case bishop:
+						if (di > 3)
+							return 1;
+						break;
 				}
 				break;
 			}
@@ -286,13 +286,26 @@ void make_move(game* g, move* m) {
 
 	if (m->promotion) {
 		// Create promoted piece
-		g->board[m->end] = PIECE_TYPE(promotion_prompt()) | g->turn;
+		g->board[m->end] = PIECE_TYPE(promotion_prompt()) | PIECE_COLOR(piece);
 		g->board[m->start] = 0;
 	} else {
 		// Manage piece list/capturing for en passant
 		if (m->en_passant) {
 			g->board[g->moves_tail->end] = 0;
 			del_piece(g->pieces[!COL_I(piece)], g->moves_tail->end);
+		}
+		// Move the rook when castling
+		switch (m->castle) {
+			// Right
+			case 2:
+				g->board[m->start + 3] = 0;
+				g->board[m->end - 1] = PIECE_COLOR(piece) | rook;
+				break;
+			// Left
+			case 1:
+				g->board[m->start - 4] = 0;
+				g->board[m->end + 1] = PIECE_COLOR(piece) | rook;
+				break;
 		}
 
 		// Move the piece
@@ -421,28 +434,30 @@ static move* get_king_moves(game* g, int tile) {
 		APPEND_LIST(m, head, nm);
 	}
 
-	// Castling di = 3 is right, = 2 is left
-	//if (!g->king_moved[COL_I(piece)]) {
-		//for (int i = 0; i < tiles_from_edge[tile][3]; i++) {
-			//int destination = tile + directions[3] * (i + 1);
-			//int occupying = g->board[destination];
-//
-			//if ((PIECE_TYPE(occupying) == rook) && (!g->rook_moved[COL_I(piece)][1])) {
-				//move* nm = new_move(tile, destination - 1, g->board[king_moves[tile][i]], 0, 0, 0, NULL);
-				//APPEND_LIST(m, head, nm);
-				//break;
-			//}
-//
-			//if (SAME_COLOR(occupying, piece))
-				//break;
-//
-			//move* nm = new_move(tile, destination, board[destination], 0, 0, 0, NULL);
-			//APPEND_LIST(m, head, nm);
-//
-			//if (ENEMY_COLOR(occupying, piece))
-				//break;
-		//}
-	//}
+	// Castling:
+	if ((!g->king_moved[COL_I(piece)]) && (!tile_attacked(g, tile))) {
+		// Direction index, di = 3 is right, = 2 is left
+		for (int di = 2; di < 4; di++) {
+			// Rook moved index, 1 is right, 0 is left
+			if (!g->rook_moved[COL_I(piece)][di - 2]) {
+				for (int i = 0; i < 2; i++) {
+					int destination = tile + directions[di] * (i + 1);
+
+					if (g->board[destination] != 0)
+						break;
+
+					if (tile_attacked(g, destination))
+						break;
+
+					// Castle move property, 2 is right, 1 is left
+					if (i == 1) {
+						move* nm = new_move(tile, destination, 0, 0, 0, di - 1, NULL);
+						APPEND_LIST(m, head, nm);
+					}
+				}
+			}
+		}
+	}
 
 	return head;
 }

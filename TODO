@@ -1,4 +1,6 @@
 Castling
+	- Undo
+	- Make exception for legal move check of the move itself
 Track piece_list outside of make/undo_move
 End game due to checkmate (no moves possible)
 Chess engine
