@@ -199,6 +199,17 @@ void repl(game* g) {
 			while (m) {
 				if (m->end == end_tile) {
 					make_move(g, m);
+
+					// For castling
+					// Track kings
+					int piece = g->board[m->end];
+					if (PIECE_TYPE(piece) == king) {
+						g->king_moved[COL_I(piece)] = 1;
+					} else if (PIECE_TYPE(piece) == rook) {
+						// Track rooks for castling (second array, 1 is h, 0 is a)
+						g->rook_moved[COL_I(piece)][m->start % 8 == 7 ? 1 : 0] = 1;
+					}
+
 					return;
 				}
 				move* om = m;

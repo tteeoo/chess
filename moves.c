@@ -171,8 +171,20 @@ static void undo_move(game* g) {
 	if (prevm->en_passant)
 		g->board[g->moves_tail->end] = (PIECE_OCOLOR(piece) | pawn);
 	
-	
-	// TODO: castling case
+	// Move the rook when castling
+	switch (prevm->castle) {
+		// Right
+		case 2:
+			g->board[prevm->start + 3] = PIECE_COLOR(piece) | rook;
+			g->board[prevm->end - 1] = 0;
+			break;
+		// Left
+		case 1:
+			g->board[prevm->start - 4] = PIECE_COLOR(piece) | rook;
+			g->board[prevm->end + 1] = 0;
+			break;
+	}
+
 }
 
 // Returns a list of legal moves given a list of pseudo legal moves
@@ -185,12 +197,10 @@ static move* filter_legal_moves(game* g, move* m) {
 		make_move(g, m);
 		// If king is not attacked, copy and add to legal moves
 		if (!tile_attacked(g, g->king_tiles[COL_I(g->turn)])) {
-			printf("n\n");
 			move* lm = new_move(m->start, m->end, m->captured, m->promotion, m->en_passant, m->castle, NULL);
 			APPEND_LIST(legal_tail, legal_head, lm);
-		} else {
-			printf("y\n");
 		}
+
 		undo_move(g);
 		m = m->next;
 	}
@@ -273,16 +283,9 @@ void make_move(game* g, move* m) {
 		del_piece(g->pieces[!COL_I(piece)], m->end);
 	}
 
-	// Track kings
-	if (PIECE_TYPE(piece) == king) {
+	// Track king locations
+	if (PIECE_TYPE(piece) == king)
 		g->king_tiles[COL_I(g->turn)] = m->end;
-		// For castling
-		g->king_moved[COL_I(piece)] = 1;
-	} else if (PIECE_TYPE(piece) == rook) {
-		// Track rooks for castling (second array, 1 is h, 0 is a)
-		g->rook_moved[COL_I(piece)][m->start % 8 == 7 ? 1 : 0] = 1;
-	}
-
 
 	if (m->promotion) {
 		// Create promoted piece
@@ -294,6 +297,7 @@ void make_move(game* g, move* m) {
 			g->board[g->moves_tail->end] = 0;
 			del_piece(g->pieces[!COL_I(piece)], g->moves_tail->end);
 		}
+
 		// Move the rook when castling
 		switch (m->castle) {
 			// Right
@@ -442,16 +446,22 @@ static move* get_king_moves(game* g, int tile) {
 			if (!g->rook_moved[COL_I(piece)][di - 2]) {
 				for (int i = 0; i < 2; i++) {
 					int destination = tile + directions[di] * (i + 1);
+					printf("empty?\n");
 
 					if (g->board[destination] != 0)
 						break;
 
-					if (tile_attacked(g, destination))
+					printf("attacked?\n");
+					if (tile_attacked(g, destination)) {
+						printf("attacked! %i\n", destination);
 						break;
+					}
 
+					printf("i dest %d, %d\n", i, destination);
 					// Castle move property, 2 is right, 1 is left
 					if (i == 1) {
 						move* nm = new_move(tile, destination, 0, 0, 0, di - 1, NULL);
+						printf("dest %d\n", destination);
 						APPEND_LIST(m, head, nm);
 					}
 				}
