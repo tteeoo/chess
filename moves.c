@@ -210,8 +210,6 @@ static move* filter_legal_moves(game* g, move* m) {
 		free(om);
 	}
 
-	printf("%d %d\n", g->king_tiles[0], g->king_tiles[1]);
-
 	return legal_head;
 }
 
@@ -445,22 +443,20 @@ static move* get_king_moves(game* g, int tile) {
 			if (!g->rook_moved[COL_I(piece)][di - 2]) {
 				for (int i = 0; i < 2; i++) {
 					int destination = tile + directions[di] * (i + 1);
-					printf("empty?\n");
 
 					if (g->board[destination] != 0)
 						break;
 
-					printf("attacked?\n");
-					if (tile_attacked(g, destination)) {
-						printf("attacked! %i\n", destination);
+					if (tile_attacked(g, destination))
 						break;
-					}
 
-					printf("i dest %d, %d\n", i, destination);
 					// Castle move property, 2 is right, 1 is left
 					if (i == 1) {
+						// Nothing between rook and king on left side
+						if ((di == 2) && (g->board[destination - 1] != 0))
+							break;
+
 						move* nm = new_move(tile, destination, 0, 0, 0, di - 1, NULL);
-						printf("dest %d\n", destination);
 						APPEND_LIST(m, head, nm);
 					}
 				}
