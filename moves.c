@@ -71,7 +71,6 @@ static int tile_attacked(game* g, int tile) {
 
 	// Less dereferencing of board
 	int* board = g->board;
-	int piece = board[tile];
 
 	// King
 	if (king_distances[tile][g->king_tiles[!COL_I(g->turn)]] == 1)
@@ -79,17 +78,17 @@ static int tile_attacked(game* g, int tile) {
 
 	// Knight
 	for (int i = 0; i < 8; i++) {
-		if (board[knight_jumps[tile][i]] == (knight | (!g->turn)))
+		if ((board[knight_jumps[tile][i]] == knight) && (ENEMY_COLOR(board[knight_jumps[tile][i]], g->turn)))
 			return 1;
 	}
 
 	// Pawn
 	for (int i = 0; i < 2; i++) {
-		if (tiles_from_edge[tile][pawn_capture_directions[COL_I(piece)][i]] > 0) {
-			int capture_direction = directions[pawn_capture_directions[COL_I(piece)][i]];
+		if (tiles_from_edge[tile][pawn_capture_directions[COL_I(g->turn)][i]] > 0) {
+			int capture_direction = directions[pawn_capture_directions[COL_I(g->turn)][i]];
 			int destination = tile + capture_direction;
 			int occupying = board[destination];
-			if (ENEMY_COLOR(occupying, piece) && (PIECE_TYPE(occupying) == pawn))
+			if (ENEMY_COLOR(occupying, g->turn) && (PIECE_TYPE(occupying) == pawn))
 				return 1;
 		}
 	}
@@ -101,11 +100,11 @@ static int tile_attacked(game* g, int tile) {
 			int destination = tile + directions[di] * (i + 1);
 			int occupying = board[destination];
 
-			if (SAME_COLOR(occupying, piece))
+			if (SAME_COLOR(occupying, g->turn))
 				break;
 
 			// Check if occupying piece type is consistent with direction
-			if (ENEMY_COLOR(occupying, piece)) {
+			if (ENEMY_COLOR(occupying, g->turn)) {
 				switch (PIECE_TYPE(occupying)) {
 					case queen:
 						return 1;
